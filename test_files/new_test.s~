@@ -1,0 +1,15 @@
+
+	.intel_syntax noprefix
+
+	.text
+
+	.globl main
+main:
+
+	xor	rdi, rdi
+	xor	esi, esi
+	mov	rsi, 5
+	
+	lea	eax, [rdi + 4*rdi + 12]
+
+	ret

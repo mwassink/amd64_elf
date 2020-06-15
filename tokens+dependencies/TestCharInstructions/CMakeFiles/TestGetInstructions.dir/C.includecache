@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/mark/programming/BinaryLearning/amd64-assembler/lex/TestGetInstructions.c
+stdio.h
+-
+unistd.h
+-
+
+/home/mark/programming/BinaryLearning/amd64-assembler/lex/get_instructions.c
+stdio.h
+-
+stdlib.h
+-
+

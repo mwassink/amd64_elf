@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="intel64"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/mark/programming/BinaryLearning/intel64/builds"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v all"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/mark/programming/BinaryLearning/intel64/builds"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v rebuild_cache"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/mark/programming/BinaryLearning/intel64/builds"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v edit_cache"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="TestGetInstructions">
+				<Option output="/home/mark/programming/BinaryLearning/intel64/builds/TestGetInstructions" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/mark/programming/BinaryLearning/intel64/builds"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/tokens+dependencies"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/write_output"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include-fixed"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v TestGetInstructions"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="TestGetInstructions/fast">
+				<Option output="/home/mark/programming/BinaryLearning/intel64/builds/TestGetInstructions" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/mark/programming/BinaryLearning/intel64/builds"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/tokens+dependencies"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/write_output"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include-fixed"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v TestGetInstructions/fast"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="TestCharInstructions">
+				<Option output="/home/mark/programming/BinaryLearning/intel64/builds/TestCharInstructions" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/mark/programming/BinaryLearning/intel64/builds"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/tokens+dependencies"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/write_output"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include-fixed"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v TestCharInstructions"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="TestCharInstructions/fast">
+				<Option output="/home/mark/programming/BinaryLearning/intel64/builds/TestCharInstructions" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/mark/programming/BinaryLearning/intel64/builds"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/tokens+dependencies"/>
+					<Add directory="/home/mark/programming/BinaryLearning/intel64/write_output"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-pc-linux-gnu/10.1.0/include-fixed"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v TestCharInstructions/fast"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/mark/programming/BinaryLearning/intel64/tokens+dependencies/TestCharInstructions.c">
+			<Option target="TestCharInstructions"/>
+		</Unit>
+		<Unit filename="/home/mark/programming/BinaryLearning/intel64/tokens+dependencies/TestGetInstructions.c">
+			<Option target="TestGetInstructions"/>
+		</Unit>
+		<Unit filename="/home/mark/programming/BinaryLearning/intel64/tokens+dependencies/get_instructions.c">
+			<Option target="TestGetInstructions"/>
+			<Option target="TestCharInstructions"/>
+		</Unit>
+		<Unit filename="/home/mark/programming/BinaryLearning/intel64/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

@@ -1,0 +1,1 @@
+/usr/bin/cc    CMakeFiles/TestCharInstructions.dir/TestCharInstructions.c.o  -o TestCharInstructions 
