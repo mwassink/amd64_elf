@@ -29,6 +29,19 @@ struct instruction_format {
     unsigned long int ID;
 };
 
+struct ID_instr_pair
+{
+  struct instruction_format * instr_ptr;
+  unsigned long int ID;
+};
+
+struct modrm
+{
+  unsigned int Mod : 2;
+  unsigned int opcode_extension : 3;
+  unsigned int rm : 3;
+};
+
 static int prefixes[30] = {0x26, 0x2e, 0x36, 0x3e, 0x40, 0x41, 0x42, 0x43,
                            0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d,
                            0x4e, 0x4f, 0x64, 0x65, 0x66, 0x67, 0x9b, 0xf0, 0xf2, 0xf3};
@@ -47,9 +60,9 @@ int string_restrict(char * input)
   return 0;
 }
 
-char * pool_memory(struct instruction_format *instr_ptr)
+char * pool_memory(struct instruction_format *instr_ptr, char * pool_begin)
 {
-    char * pool_begin = malloc(190);
+    
     instr_ptr->prefix = 0;
     instr_ptr->prefix_OF = 0;
     instr_ptr->primary_opcode = 0;
@@ -73,7 +86,10 @@ char * pool_memory(struct instruction_format *instr_ptr)
     return pool_begin; // so that the pointer does not get lost and leaked
 }  
   
+void assign_to_even_larger_pool(int available_index, void * memory_pool_start)
+{
   
+}
 
 
 unsigned char byte_hexstring_to_int(char * input)
@@ -413,7 +429,28 @@ long unsigned int  name_to_id( char * mnemonic)
   return return_value;
 }
 
+void bubble_sort_instructions(struct ID_instr_pair * pair_array, int size)
+{
+  
 
+  struct ID_instr_pair temp;
+  temp.instr_ptr = NULL;
+  temp.ID = 0;
+
+  for (int i = 0; i < size; ++i)
+    {
+      while(pair_array[i].ID > pair_array[i-1].ID)
+	{
+	  temp = pair_array[i];
+	  pair_array[i] = pair_array[i-1];
+	  pair_array[i-1] = temp;
+	  i -= 1;
+	}
+    }
+  
+}
+
+void * 
 
 
 
