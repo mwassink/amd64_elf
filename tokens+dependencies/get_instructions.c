@@ -42,9 +42,9 @@ struct modrm
   unsigned int rm : 3;
 };
 
-static int prefixes[30] = {0x26, 0x2e, 0x36, 0x3e, 0x40, 0x41, 0x42, 0x43,
-                           0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d,
-                           0x4e, 0x4f, 0x64, 0x65, 0x66, 0x67, 0x9b, 0xf0, 0xf2, 0xf3};
+//static int prefixes[30] = {0x26, 0x2e, 0x36, 0x3e, 0x40, 0x41, 0x42, 0x43,
+//                         0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d,
+//                         0x4e, 0x4f, 0x64, 0x65, 0x66, 0x67, 0x9b, 0xf0, 0xf2, 0xf3};
 
 int string_restrict(char * input)
 {
@@ -60,7 +60,7 @@ int string_restrict(char * input)
   return 0;
 }
 
-char * pool_memory(struct instruction_format *instr_ptr, char * pool_begin)
+void pool_memory(struct instruction_format *instr_ptr, char * char_pool_begin)
 {
     
     instr_ptr->prefix = 0;
@@ -72,24 +72,21 @@ char * pool_memory(struct instruction_format *instr_ptr, char * pool_begin)
     instr_ptr->mode = 0;
     instr_ptr->ring_level = -1; //potentially confusing
     instr_ptr->lock_prefix = 0;
-    instr_ptr->mnemonic = pool_begin + 16;
-    instr_ptr->op1 = pool_begin + 32;
-    instr_ptr->op2 = pool_begin + 48;
-    instr_ptr->op3 = pool_begin + 64;
-    instr_ptr->op4 = pool_begin + 80;
-    instr_ptr->iext = pool_begin + 96;
-    instr_ptr->tested_flags = pool_begin + 112;
-    instr_ptr->modif_flags = pool_begin + 128;
-    instr_ptr->undef_flags = pool_begin + 144;
-    instr_ptr->flag_values = pool_begin + 160; // up to 176
+    instr_ptr->mnemonic = char_pool_begin + 16;
+    instr_ptr->op1 = char_pool_begin + 32;
+    instr_ptr->op2 = char_pool_begin + 48;
+    instr_ptr->op3 = char_pool_begin + 64;
+    instr_ptr->op4 = char_pool_begin + 80;
+    instr_ptr->iext = char_pool_begin + 96;
+    instr_ptr->tested_flags = char_pool_begin + 112;
+    instr_ptr->modif_flags = char_pool_begin + 128;
+    instr_ptr->undef_flags = char_pool_begin + 144;
+    instr_ptr->flag_values = char_pool_begin + 160; // up to 176
     instr_ptr->pooled = -1;
-    return pool_begin; // so that the pointer does not get lost and leaked
+     // so that the pointer does not get lost and leaked
 }  
   
-void assign_to_even_larger_pool(int available_index, void * memory_pool_start)
-{
-  
-}
+
 
 
 unsigned char byte_hexstring_to_int(char * input)
@@ -181,7 +178,7 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
     char temp[17];
 
     
-    fileptr = fopen("instructions.csv", "r");
+    
 
 
     for (; counter < 10; )
@@ -450,7 +447,27 @@ void bubble_sort_instructions(struct ID_instr_pair * pair_array, int size)
   
 }
 
-void * 
+
+
+struct instruction_format*  pool_struct_memory(int instructions)
+{
+  // This will return a pointer to a pool of roughly 1000 instructions
+  struct instruction_format sample;
+  struct instruction_format* pool_ptr = (struct instruction_format*)malloc(instructions*sizeof(sample));
+  return pool_ptr;
+}
+
+
+char * pool_character_memory(int instructions)
+{
+  char * char_ptr = (char *)malloc(instructions*16*11);
+  return char_ptr;
+}
+
+unsigned int map_register_to_ID(char * reg)
+{
+  
+}
 
 
 
@@ -467,4 +484,70 @@ void *
 
 
 
-// DO NOT GO BELOW THIS LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void pull_instructions()
+{
+  // The first thing that needs to be done is to give space for the structs and the characters
+  char * memory_pool = pool_character_memory(1000);
+  struct instruction_format* instructions = pool_struct_memory(1000);
+  struct ID_instr_pair* pair_array_ptr  = malloc(16000);
+  /* Available memory
+     
+     memory_pool = 176000
+     instructions = 112000
+   */
+  //int char_step = 176;
+  FILE * fptr;
+
+  fptr = fopen("instructions.csv", "r");
+  for (int i = 0; i < 1000; ++i)
+    {
+      struct instruction_format *current_ptr = instructions+i; // change this later
+      pool_memory(current_ptr, memory_pool+176*i);
+      gather_instruction(current_ptr, fptr);
+      write_instruction_stdout(current_ptr);
+    }
+
+  //Make the instruction, ID pairs
+  for (int k = 0; k < 1000 ; k++)
+    {
+      pair_array_ptr[k].ID = instructions[k].ID;
+      pair_array_ptr[k].instr_ptr = instructions+k;
+    }
+
+  bubble_sort_instructions(pair_array_ptr, 1000);
+
+
+  
+  // After the data structures are formed
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
