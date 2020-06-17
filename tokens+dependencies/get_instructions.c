@@ -16,6 +16,7 @@ struct instruction_format {
     unsigned char lock_prefix;
  
     char *mnemonic; //16
+
     char *op1; //16
     char *op2; //16
     char *op3; //16
@@ -466,39 +467,25 @@ char * pool_character_memory(int instructions)
 
 unsigned int map_register_to_ID(char * reg)
 {
-  
+  // Unsigned char and char will look the same as long as it is not negative
+  // Stored in 2's complement
+  unsigned int returned_value = 0;
+
+  returned_value |= reg[0];
+  returned_value <<=4;
+  returned_value |= reg[1];
+  returned_value <<=4;
+  returned_value |= reg[2];
+  returned_value <<=4;
+  returned_value |= reg[3];
+
+  return returned_value;
 }
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void pull_instructions()
+void pull_instructions_and_rewrite()
 {
   // The first thing that needs to be done is to give space for the structs and the characters
   char * memory_pool = pool_character_memory(1000);
@@ -531,7 +518,9 @@ void pull_instructions()
   bubble_sort_instructions(pair_array_ptr, 1000);
 
 
-  
+  free(memory_pool);
+  free(instructions);
+  free(pair_array_ptr);
   // After the data structures are formed
 }
 

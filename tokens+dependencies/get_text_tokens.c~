@@ -1,0 +1,57 @@
+
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+
+#define MAX_REGISTER_LETTER_LENGTH 4;
+
+//enumerate valid tokens to assemble
+//enumerate valid suffixes to assemble
+//at&t syntax first
+
+// %rax, %rbx, %rcx,%rdx %rbp,%rsp,
+
+struct Register
+{
+  int ID;
+  unsigned short size;
+};
+
+
+void init_32_64_bit_old_register_from_string(char * input_string, struct  Register * input_register )
+{
+  input_register->ID = 0;
+  input_register->ID |= input_string[0];
+  input_register->ID <<= 4;
+  input_register->ID |= input_string[1];
+  input_register->ID <<= 4;
+  input_register->ID |= input_string[2];
+
+  if (input_string[0] == 'e')
+    input_register->size = 0x20;
+  if (input_string[0] == 'r')
+    input_register->size = 0x40;
+}
+
+void init_16_bit_old_register_from_string(char * input_string, struct Register * input_register)
+{
+  
+  input_register->ID = 0;
+  input_register->ID |= input_string[0];
+  input_register->ID <<= 4;
+  input_register->ID |= input_string[1];
+  
+  input_register->size = 0x10;
+}
+
+
+void init_new_register_from_string(char * input_string, struct Register * input_register, int register_name_length)
+{
+  
+}
+
+
+
+
