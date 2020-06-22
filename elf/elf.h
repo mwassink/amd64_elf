@@ -9,10 +9,6 @@ typedef unsigned short int  Elf64_Half;
 typedef int                 Elf64_Sword;
 typedef unsigned long int   Elf64_Xword;
 typedef long int            Elf64_Sxword;
-
-
-
-
 // Defines structs and functions for reading an ELF file 
 
 typedef struct
@@ -33,24 +29,10 @@ Elf64_Half e_shnum; /* Number of section header entries */
 Elf64_Half e_shstrndx; /* Section name string table index */
 } Elf64_Ehdr;
 
-void print_e_type(Elf64_Half input);
-
-void print_e_machine(Elf64_Half input);
-
-
-
+void print_e_type(Elf64_Half *input);
+void print_e_machine(Elf64_Half *input);
 void print_e_version();
-
-
 void print_buffer(unsigned char * array);
-
-void print_e_ident(unsigned char input);
-
-
-
+void print_e_os_abi(unsigned char input);
 void print_elf_header(const char * input_string);
 
-
-
-
-void init_elf_header(struct elf_header * elf_ptr, unsigned char * array);

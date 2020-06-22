@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <elf.h>
+#include "elf.h"
 
 
-void print_e_type(Elf64_Half input)
+void print_e_type(Elf64_Half * input)
 {
-    switch (input)
+    switch (*input)
     {
         case 0:
         printf("ET_NONE, No file type");
@@ -33,9 +33,9 @@ void print_e_type(Elf64_Half input)
     }
 }
 
-void print_e_machine(Elf64_Half input)
+void print_e_machine(Elf64_Half * input)
 {
-    switch (input)
+    switch (*input)
     {
         case 0:
         printf("No machine");
@@ -98,7 +98,7 @@ void print_buffer(unsigned char * array)
     }
 }
 
-void print_e_ident(unsigned char input)
+void print_e_os_abi(unsigned char input)
 {
     switch (input)
     {
@@ -218,14 +218,97 @@ void print_elf_header(const char * input_string)
         printf("Endianness not identified \n");
     }
 
+    printf("Offset 0x6: \n");
     print_e_version(); printf("\n");
 
-    print_e_ident(buffer[6]); printf("\n");
+    printf("Offset 0x7: OS_ABI \n");
+    print_e_os_abi(buffer[6]); printf("\n");
 
+    printf("Offset 0x8: ABIVERSION \n");
     printf("ABI VERSION: %d \n", buffer[8]);
+
+    printf("Offset 0x09: EI_PAD \n");
+    printf("0x00000000000000 \n");
+
+    printf("Offset 0x10: e_type \n");
+    print_e_type((Elf64_Half*)(buffer+10)); printf("\n"); /* 16 */
+
+    printf("Offset 0x12: e_machine \n");
+    print_e_machine((Elf64_Half*)(buffer+12)); printf("\n"); /* 18 */
+
+    printf("Offset 0x14: e_version \n");
+    printf("0x00000001"); printf("\n");
+   
+    int current_address = 24; //0x18
+    if (buffer[4] == 1)
+    {   printf("Offset %x: entry point \n", current_address);
+        int *temp1 = ( int *)(buffer + current_address);     
+        printf("%x \n", *temp1);
+        current_address += 4;
+        printf("Offset %x: e_phoff \n", current_address);
+        temp1 = (int *)(buffer + current_address);
+        printf("%x \n",  *temp1);
+        current_address += 4;
+        printf("Offset %x: e_shoff \n", current_address);
+        temp1 = (int *)(buffer + current_address);
+        printf("%x, \n", *temp1);
+        current_address += 4;
+
+    }
+    else
+    {
+        printf("Offset %x: entry point \n", current_address);
+        long int *temp1 = (long int *)(buffer + current_address);
+        printf("%lx \n", *temp1);
+        current_address += 8;
+        printf("Offset %x: e_phoff \n", current_address);
+        temp1 = (long int *)(buffer + current_address);
+        printf("%lx \n",  *temp1);
+        current_address += 8;
+        printf("Offset %x: e_shoff \n", current_address);
+        temp1 = (long int *)(buffer + current_address);
+        printf("%lx, \n", *temp1);
+        current_address += 8;
+    }
+
+    printf("Offset %x: e_flags\n", current_address);
+    int * temp2 = (int *)(buffer + current_address);
+    printf("%x \n", *temp2); 
+    current_address += 4;
+
+    printf("Offset %x: e_ehsize \n", current_address);
+    short int * temp3 = (short int *)(buffer + current_address);
+    printf("%hx \n", *temp3);
+    current_address += 2;
+
+    printf("Offset %x, e_phentsize \n", current_address);
+    short int * temp4 = (short int * )(buffer +current_address);
+    printf("%hx \n", *temp4);
+    current_address += 2;
+
+    printf("Offset %x, e_phnum \n", current_address );
+    short int * temp5 = (short int *)(buffer + current_address);
+    printf("%hx \n", *temp5);
+    current_address += 2;
+
+    printf("Offset %x: e_shentsize \n", current_address);
+    short int * temp6 = (short int *)(buffer + current_address);
+    printf("%hx \n", *temp6);
+    current_address += 2;
+
+    printf("Offset %x: e_shnum \n", current_address);
+    short int * temp7 = (short int *)(buffer + current_address);
+    printf("%hx \n", *temp7);
+    current_address += 2;
+
+    printf("Offset %x, e_shstrndx \n", current_address);
+    short int * temp8 = (short int *)(buffer + current_address);
+    printf("%hx \n", *temp8);
+
+
+    
 }
 
 
 
 
-void init_elf_header(struct elf_header * elf_ptr, unsigned char * array);
