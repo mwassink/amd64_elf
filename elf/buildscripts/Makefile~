@@ -1,0 +1,18 @@
+IDIR =../include
+CC=gcc
+CFLAGS=-Werror -Wall -g
+DEPS=elf.h
+ODIR=../objects
+OBJS= testelfheader.o elf.o
+VPATH=../src
+INCLUDE=../src
+SOURCES=elf.c testelfheader.c
+
+
+testelfheader:
+	$(CC) -o testelfheader $(CFLAGS) $(OBJS)
+
+.PHONY: clean
+
+clean:
+	rm -f $(OBJ) testelfheader
