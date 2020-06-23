@@ -1,4 +1,0 @@
-/home/mark/programming/BinaryLearning/amd64-assembler/lex/TestCharInstructions/CMakeFiles/rebuild_cache.dir
-/home/mark/programming/BinaryLearning/amd64-assembler/lex/TestCharInstructions/CMakeFiles/edit_cache.dir
-/home/mark/programming/BinaryLearning/amd64-assembler/lex/TestCharInstructions/CMakeFiles/TestCharInstructions.dir
-/home/mark/programming/BinaryLearning/amd64-assembler/lex/TestCharInstructions/CMakeFiles/TestGetInstructions.dir
