@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "elf.h"
+#include "../include/elf.h"
 
 
 void print_e_type(Elf64_Half * input)
@@ -77,11 +77,19 @@ void print_buffer(unsigned char * array)
         int offset = 0;
         printf("Little Endian Format");
         
-        for (int i = 0; i < 32; ++i)
+        for (int i = 0; i < 64; ++i)
         {
-            if (offset++ % 8 == 0)
+            if (offset++ % 16 == 0)
                 printf("\n");
-            printf("%d%d" ,array[2*i + 1], array[2*i] );
+            if (array[i] < 0x10)
+	      {
+		printf("0%x ", array[i]);
+		
+	      }
+	    else
+	      {
+		printf("%x ", array[i]);
+	      }
         }
     }
     else 
@@ -89,11 +97,19 @@ void print_buffer(unsigned char * array)
         int offset = 0;
         printf("Big Endian");
 
-        for (int i = 0; i < 32; ++i)
+        for (int i = 0; i < 64; ++i)
         {
-            if (offset++ % 8 == 0)
+            if (offset++ % 16 == 0)
                 printf("\n");
-            printf("%d%d ", array[2*i], array[2*i + 1]);
+            if (array[i] < 0x10)
+	      {
+		printf("0%x ", array[i]);
+		
+	      }
+	    else
+	      {
+		printf("%x ", array[i]);
+	      }
         }
     }
 }
@@ -165,13 +181,21 @@ void print_e_os_abi(unsigned char input)
 
 
 
-void print_elf_header(const char * input_string)
+int print_elf_header(const char * input_string)
 {
     FILE * file_pointer = fopen(input_string, "rb");
 
     unsigned char buffer[65];
 
-    
+    if (!file_pointer)
+        {
+            return -1;
+        }
+
+    if (file_pointer->_IO_read_end - file_pointer->_IO_read_base < 64)
+      {
+	return -2;
+      }
     fread(buffer, 64, 1, file_pointer);
 
     print_buffer(buffer);
@@ -183,10 +207,10 @@ void print_elf_header(const char * input_string)
         elf_magic[i] = buffer[i];
     }
     elf_magic[4] = 0;
-    printf("Offset Range 0x0 - 0x4: \n");
+    printf("\nOffset Range 0x0 - 0x4: \n");
     printf("Elf magic: %s", elf_magic);
 
-    printf("Offset 0x04: \n");
+    printf("\nOffset 0x04: \n");
     if (buffer[4] == 0x1)
     {
         printf("0x1: 32 bit system \n");
@@ -222,7 +246,7 @@ void print_elf_header(const char * input_string)
     print_e_version(); printf("\n");
 
     printf("Offset 0x7: OS_ABI \n");
-    print_e_os_abi(buffer[6]); printf("\n");
+    print_e_os_abi(buffer[7]); printf("\n");
 
     printf("Offset 0x8: ABIVERSION \n");
     printf("ABI VERSION: %d \n", buffer[8]);
@@ -231,83 +255,264 @@ void print_elf_header(const char * input_string)
     printf("0x00000000000000 \n");
 
     printf("Offset 0x10: e_type \n");
-    print_e_type((Elf64_Half*)(buffer+10)); printf("\n"); /* 16 */
+    print_e_type((Elf64_Half*)(buffer+0x10)); printf("\n"); /* 16 */
 
     printf("Offset 0x12: e_machine \n");
-    print_e_machine((Elf64_Half*)(buffer+12)); printf("\n"); /* 18 */
+    print_e_machine((Elf64_Half*)(buffer+0x12)); printf("\n"); /* 18 */
 
     printf("Offset 0x14: e_version \n");
     printf("0x00000001"); printf("\n");
    
     int current_address = 24; //0x18
     if (buffer[4] == 1)
-    {   printf("Offset %x: entry point \n", current_address);
-        int *temp1 = ( int *)(buffer + current_address);     
-        printf("%x \n", *temp1);
+    {   printf("Offset 0x%x: entry point \n", current_address);
+        int *temp1 = ( int *)(buffer + current_address + 4);     
+        printf("0x%x \n", *temp1);
         current_address += 4;
-        printf("Offset %x: e_phoff \n", current_address);
+        printf("Offset 0x%x: e_phoff \n", current_address + 4);
         temp1 = (int *)(buffer + current_address);
-        printf("%x \n",  *temp1);
+        printf("0x%x \n",  *temp1);
         current_address += 4;
-        printf("Offset %x: e_shoff \n", current_address);
+        printf("Offset 0x%x: e_shoff \n", current_address + 4);
         temp1 = (int *)(buffer + current_address);
-        printf("%x, \n", *temp1);
+        printf("0x%x, \n", *temp1);
         current_address += 4;
 
     }
     else
     {
-        printf("Offset %x: entry point \n", current_address);
-        long int *temp1 = (long int *)(buffer + current_address);
-        printf("%lx \n", *temp1);
+        printf("Offset 0x%x: entry point \n", current_address);
+        long int *temp1 = ( long int *)(buffer + current_address );
+        printf("0x%lx \n", *temp1);
         current_address += 8;
-        printf("Offset %x: e_phoff \n", current_address);
-        temp1 = (long int *)(buffer + current_address);
-        printf("%lx \n",  *temp1);
+        printf("Offset 0x%x: e_phoff \n", current_address);
+        temp1 = ( long int *)(buffer + current_address );
+        printf("0x%lx \n",  *temp1);
         current_address += 8;
-        printf("Offset %x: e_shoff \n", current_address);
-        temp1 = (long int *)(buffer + current_address);
-        printf("%lx, \n", *temp1);
+        printf("Offset 0x%x: e_shoff \n", current_address);
+        temp1 = (long int *)(buffer + current_address );
+        printf("0x%lx, \n", *temp1);
         current_address += 8;
     }
 
-    printf("Offset %x: e_flags\n", current_address);
+    printf("Offset 0x%x: e_flags\n", current_address);
     int * temp2 = (int *)(buffer + current_address);
-    printf("%x \n", *temp2); 
+    printf("0x%x \n", *temp2); 
     current_address += 4;
 
-    printf("Offset %x: e_ehsize \n", current_address);
+    printf("Offset 0x%x: e_ehsize \n", current_address);
     short int * temp3 = (short int *)(buffer + current_address);
-    printf("%hx \n", *temp3);
+    printf("0x%hx \n", *temp3);
     current_address += 2;
 
-    printf("Offset %x, e_phentsize \n", current_address);
+    printf("Offset 0x%x, e_phentsize \n", current_address);
     short int * temp4 = (short int * )(buffer +current_address);
-    printf("%hx \n", *temp4);
+    printf("0x%hx \n", *temp4);
     current_address += 2;
 
-    printf("Offset %x, e_phnum \n", current_address );
+    printf("Offset 0x%x, e_phnum \n", current_address );
     short int * temp5 = (short int *)(buffer + current_address);
-    printf("%hx \n", *temp5);
+    printf("0x%hx \n", *temp5);
     current_address += 2;
 
-    printf("Offset %x: e_shentsize \n", current_address);
+    printf("Offset 0x%x: e_shentsize \n", current_address);
     short int * temp6 = (short int *)(buffer + current_address);
-    printf("%hx \n", *temp6);
+    printf("0x%hx \n", *temp6);
     current_address += 2;
 
-    printf("Offset %x: e_shnum \n", current_address);
+    printf("Offset 0x%x: e_shnum \n", current_address);
     short int * temp7 = (short int *)(buffer + current_address);
-    printf("%hx \n", *temp7);
+    printf("0x%hx \n", *temp7);
     current_address += 2;
 
-    printf("Offset %x, e_shstrndx \n", current_address);
+    printf("Offset 0x%x, e_shstrndx \n", current_address);
     short int * temp8 = (short int *)(buffer + current_address);
-    printf("%hx \n", *temp8);
+    printf("0x%hx \n", *temp8);
 
 
-    
+    return 0;
 }
+
+
+
+int populate_elf_header_64(const char * input_file, struct Elf64_Ehdr *elf_header64)
+{
+  struct Elf64_Ehdr * elf_header = elf_header64;
+
+  
+  FILE * file_pointer = fopen(input_file, "rb");
+
+  if(!file_pointer)
+    return -1;
+
+  unsigned char buffer[64];
+
+  if (file_pointer->_IO_read_end - file_pointer->_IO_read_base < 64)
+    {
+      return -2;
+    }
+
+  fread(buffer, 64, 1, file_pointer);
+
+  for (int k = 0; k < 16; ++k)
+    {
+      elf_header->e_ident[k] = buffer[k];
+    }
+
+  unsigned short int * small_ptr = (unsigned short int *)(buffer + 16);
+  elf_header->e_type = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 18);
+  elf_header->e_machine = *small_ptr;
+
+  unsigned int * medium_ptr = (unsigned int *)(buffer + 20);
+  elf_header->e_version = *medium_ptr;
+
+  unsigned long int * long_ptr = (unsigned long int *)(buffer + 24);
+  elf_header->e_entry = *long_ptr;
+  long_ptr = (unsigned long int *)(buffer + 32);
+  elf_header->e_phoff = *long_ptr;
+  long_ptr = (unsigned long int *)(buffer + 40);
+  elf_header->e_shoff = *long_ptr;
+
+  medium_ptr = (unsigned int *)(buffer + 48);
+  elf_header->e_flags = *medium_ptr;
+
+  small_ptr = (unsigned short int *)(buffer + 52);
+  elf_header->e_ehsize = *small_ptr;
+
+
+  small_ptr = (unsigned short int *)(buffer + 54);
+  elf_header->e_phentsize = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 56);
+  elf_header->e_phnum = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 58);
+  elf_header->e_shentsize = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 60);
+  elf_header->e_shnum = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 62);
+  elf_header->e_shstrndx = *small_ptr;
+  
+  return 0;
+
+
+}
+
+
+int populate_elf_header_32(const char * input_file, struct Elf32_Ehdr *elf_header32)
+{
+  struct Elf32_Ehdr * elf_header = elf_header32;
+
+  
+  FILE * file_pointer = fopen(input_file, "rb");
+
+  if(!file_pointer)
+    return -1;
+
+  unsigned char buffer[64];
+
+  if (file_pointer->_IO_read_end - file_pointer->_IO_read_base < 64)
+    {
+      return -2;
+    }
+
+  fread(buffer, 64, 1, file_pointer);
+
+  for (int k = 0; k < 16; ++k)
+    {
+      elf_header->e_ident[k] = buffer[k];
+    }
+
+  unsigned short int * small_ptr = (unsigned short int *)(buffer + 16);
+  elf_header->e_type = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 18);
+  elf_header->e_machine = *small_ptr;
+
+  unsigned int * medium_ptr = (unsigned int *)(buffer + 20);
+  elf_header->e_version = *medium_ptr;
+
+  medium_ptr = (unsigned  int *)(buffer + 24);
+  elf_header->e_entry = *medium_ptr;
+  medium_ptr  = (unsigned  int *)(buffer + 28);
+  elf_header->e_phoff = *medium_ptr;
+  medium_ptr = (unsigned  int *)(buffer + 32);
+  elf_header->e_shoff = *medium_ptr;
+
+  medium_ptr = (unsigned int *)(buffer + 36);
+  elf_header->e_flags = *medium_ptr;
+
+  small_ptr = (unsigned short int *)(buffer + 40);
+  elf_header->e_ehsize = *small_ptr;
+
+
+  small_ptr = (unsigned short int *)(buffer + 42);
+  elf_header->e_phentsize = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 44);
+  elf_header->e_phnum = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 46);
+  elf_header->e_shentsize = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 48);
+  elf_header->e_shnum = *small_ptr;
+  small_ptr = (unsigned short int *)(buffer + 50);
+  elf_header->e_shstrndx = *small_ptr;
+  
+  return 0;
+
+
+}
+
+int write_elf_header_64(const char * output_file_name, struct Elf64_Ehdr *elf_header)
+{
+  FILE * fileptr = fopen(output_file_name, "wb");
+
+  
+  if (!fileptr)
+    return -1;
+  /* 0x00 - 0x10 */
+  fwrite(elf_header->e_ident, 16, 1,fileptr);
+  fwrite(&elf_header->e_type, 1, sizeof(elf_header->e_type), fileptr);
+  fwrite(&elf_header->e_machine, 1, sizeof(elf_header->e_machine), fileptr);
+  fwrite(&elf_header->e_version, 1, sizeof(elf_header->e_version), fileptr);
+  fwrite(&elf_header->e_entry,1, sizeof(elf_header->e_entry), fileptr);
+  fwrite(&elf_header->e_phoff,1, sizeof(elf_header->e_phoff), fileptr);
+  fwrite(&elf_header->e_shoff, 1, sizeof(elf_header->e_shoff), fileptr);
+  fwrite(&elf_header->e_flags, 1, sizeof(elf_header->e_flags), fileptr);
+  fwrite(&elf_header->e_ehsize, 1, sizeof(elf_header->e_ehsize), fileptr);
+  fwrite(&elf_header->e_phentsize, 1, sizeof(elf_header->e_phentsize), fileptr);
+  fwrite(&elf_header->e_phnum, 1, sizeof(elf_header->e_phnum), fileptr);
+  fwrite(&elf_header->e_shentsize, 1, sizeof(elf_header->e_shentsize), fileptr);
+  fwrite(&elf_header->e_shnum, 1, sizeof(elf_header->e_shnum), fileptr);
+  fwrite(&elf_header->e_shstrndx, 1, sizeof(elf_header->e_shstrndx), fileptr);
+  
+  return 0;
+}
+
+int write_elf_header_32(const char * output_file_name, struct Elf32_Ehdr *elf_header)
+{
+  FILE * fileptr = fopen(output_file_name, "wb");
+
+  
+  if (!fileptr)
+    return -1;
+  /* 0x00 - 0x10 */
+  fwrite(elf_header->e_ident, 16, 1,fileptr);
+  fwrite(&elf_header->e_type, 1, sizeof(elf_header->e_type), fileptr);
+  fwrite(&elf_header->e_machine, 1, sizeof(elf_header->e_machine), fileptr);
+  fwrite(&elf_header->e_version, 1, sizeof(elf_header->e_version), fileptr);
+  fwrite(&elf_header->e_entry,1, sizeof(elf_header->e_entry), fileptr);
+  fwrite(&elf_header->e_phoff,1, sizeof(elf_header->e_phoff), fileptr);
+  fwrite(&elf_header->e_shoff, 1, sizeof(elf_header->e_shoff), fileptr);
+  fwrite(&elf_header->e_flags, 1, sizeof(elf_header->e_flags), fileptr);
+  fwrite(&elf_header->e_ehsize, 1, sizeof(elf_header->e_ehsize), fileptr);
+  fwrite(&elf_header->e_phentsize, 1, sizeof(elf_header->e_phentsize), fileptr);
+  fwrite(&elf_header->e_phnum, 1, sizeof(elf_header->e_phnum), fileptr);
+  fwrite(&elf_header->e_shentsize, 1, sizeof(elf_header->e_shentsize), fileptr);
+  fwrite(&elf_header->e_shnum, 1, sizeof(elf_header->e_shnum), fileptr);
+  fwrite(&elf_header->e_shstrndx, 1, sizeof(elf_header->e_shstrndx), fileptr);
+  
+  return 0;
+}
+
+
 
 
 

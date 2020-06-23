@@ -18,7 +18,6 @@ typedef unsigned short int  Elf32_Half;
 typedef int                 Elf32_Sword;
 
 
-
 struct Elf64_Ehdr
 {
 unsigned char e_ident[16]; /* ELF identification */
@@ -55,6 +54,9 @@ struct Elf32_Ehdr
   Elf32_Half    e_shstrndx; /* Section name string table index */
   
 };
+
+
+
 
 void print_e_type(Elf64_Half *input);
 void print_e_machine(Elf64_Half *input);
