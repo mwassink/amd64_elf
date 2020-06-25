@@ -4,6 +4,64 @@
 #include "../include/elf.h"
 
 
+
+
+
+void print_p_type(int in)
+{
+  switch (in)
+    {
+    case 0:
+      printf("0x00000000 PT_NULL. ENtry Unused");
+      break;
+    case 1:
+      printf("0x00000001 PT_LOAD. Loadable segment");
+      break;
+    case 2:
+      printf("0x00000002 PT_DYNAMIC Dynamic Linking information");
+      break;
+    case 3:
+      printf("0x00000003 PT_INTERP Interpreter Information");
+      break;
+    case 4:
+      printf("0x00000004 PT_NOTE Auxiliary Information");
+      break;
+    case 5:
+      printf("0x00000005 PT_SHLIB reserved ");
+      break;
+    case 6:
+      printf("0x00000006 PT_PHDR segment containing program header table itself ");
+      break;
+    case 7:
+      printf("0x00000007 PT_TLS thread-Local storage template ");
+      break;
+    case 0x60000000:
+      printf("0x60000000 PT_LOOS inclusive reserved ranges for operating system semantics ");
+      break;
+    case 0x6FFFFFFF:
+      printf("0x6FFFFFFF PT_HIOS  inclusive reserved ranges for operating system semantics ");
+      break;
+    case 0x70000000:
+      printf("0x70000000 PT_LOPROC  inclusive reserved ranges for operating system semantics ");
+      break;
+    case 0x7FFFFFFF:
+      printf("0x7FFFFFFF PT_HIPROC  inclusive reserved ranges for operating system semantics");
+      break;
+
+    default:
+      printf("unknown p_type ");
+
+    }
+}
+
+
+
+
+
+
+
+
+
 void print_e_type(Elf64_Half * input)
 {
     switch (*input)
@@ -513,7 +571,118 @@ int write_elf_header_32(const char * output_file_name, struct Elf32_Ehdr *elf_he
 }
 
 
+// Start Program Header
+
+int print_program_header(const char * in_file)
+{
+  FILE * fp = fopen(in_file);
+
+  if (!in_file)
+    {
+      return -1;
+      printf("File does not exist or is inaccessible");
+    }
+
+  // Looks for the program header in the elf header
+
+  if (fp->_IO_read_end - _IO_read_base < 64)
+    {
+      return -2;
+    }
+
+  unsigned char buffer[64];
+  fread(buffer, 64, 1, fp);
+  long int phoff = 0;
+  int sphoff = 0;
+  if (buffer[4] == 1)
+    {
+      // 32 Bit format
+      int * temp = (int *)(buffer + 0x1C);
+      phoff = *temp;
+    }
+
+  else if (buffer[4] == 2)
+    {
+      long int * temp = (long int *)(buffer + 0x20);
+      phoff = *temp;
+
+    }
 
 
 
+  fp->_IO_read_ptr = fp->_IO_read_base + phoff;
+
+  int * type = NULL;
+  fread(type, 1, 4, fp);
+  if (buffer[4] == 1)
+    printf("Offset 0x%x ", sphoff);
+  else
+    printf("Offset 0x%lx ", phoff);
+  print_p_type(*type);
+  phoff += 4; //0x04
+
+  if (buffer[4] == 2)
+    {
+      unsigned long int long_numbers[6];
+      printf("Offset 0x%lx : p_flags ", phoff + 4);
+      int * temp;
+      fread(temp, 4, 1, fp);
+      printf("\n %x \n", *temp);
+      phoff += 4; // 0x08
+      printf("Offset 0x%lx: p_offset \n", phoff);
+      fread(long_numbers, 8, 6, fp);
+      printf("%lx ", long_numbers[0]);
+      phoff += 8;
+      printf("Offset 0x%lx: p_vaddr\n", phoff);
+      printf("%lx ", long_numbers[1]);
+      phoff += 8;
+      printf("offset 0x%lx: p_paddr \n", phoff);
+      printf("%lx ", long_numbers[2]);
+      phoff += 8;
+      printf("Offset 0x%lx p_filesz \n", phoff);
+      printf("%lx ", long_numbers[3]);
+      phoff += 8;
+      printf("Offset 0x%lx p_memsz \n", phoff);
+      printf("%lx ", long_numbers[4]);
+      phoff += 8;
+      printf("Offset 0x%lx p_align \n", phoff);
+      phoff += 8;
+      printf("%lx ", long_numbers[5]);
+      printf("Offset 0x%lx End of Program Header", phoff);
+
+    }
+
+  else if (buffer[4] == 1)
+    {
+      unsigned int long_numbers[7];
+      int * temp;
+      fread(temp, 4, 1, fp);
+      printf("\n %x \n", *temp);
+      sphoff += 4; // 0x08
+      printf("Offset 0x%x: p_offset \n", sphoff);
+      fread(long_numbers, 4, 7, fp);
+      printf("%x ", long_numbers[0]);
+      sphoff += 4;
+      printf("Offset 0x%x: p_vaddr\n", sphoff);
+      printf("%x ", long_numbers[1]);
+      sphoff += 4;
+      printf("offset 0x%x: p_paddr \n", sphoff);
+      printf("%x ", long_numbers[2]);
+      sphoff += 4;
+      printf("Offset 0x%x p_filesz \n", sphoff);
+      printf("%x ", long_numbers[3]);
+      sphoff += 4;
+      printf("Offset 0x%x p_memsz \n", sphoff);
+      printf("%x ", long_numbers[4]);
+      sphoff += 4;
+      printf("Offset 0x%x p_flags \n", sphoff);
+      sphoff += 4;
+      printf("%x ", long_numbers[5]);
+      printf("Offset 0x%x p_align \n", sphoff);
+      printf("%x ", long_numbers[6]);
+      printf("Offset 0x%x End of Program Header", sphoff);
+
+    }
+  
+}
 
