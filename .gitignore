@@ -1,2 +1,9 @@
 builds/
 test_files/
+builds
+*.txt
+*.make
+*.internal
+*.cmake
+*.bin
+*.marks
