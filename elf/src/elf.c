@@ -54,7 +54,77 @@ void print_p_type(int in)
     }
 }
 
+void print_sh_type(int in )
+{
+  switch (in)
+    {
+    case 0:
+      printf("0x00000000 SHT NULL \n");
+      break;
+    case 1:
+      printf("0x00000001 SHT_PROGBITS Program data\n");
+      break;
+    case 2:
+      printf("0x00000002 SHT_SYMTAB Symbol table\n");
+      break;
+    case 3:
+      printf("0x00000003 SHT_STRTAB String table \n");
+      break;
+    case 4:
+      printf("0x00000004 SHT_RELA Relocation entries with addends \n");
+      break;
+    case 5:
+      printf("0x00000005 SHT_HASH Symbol hash table \n");
+      break;
+    case 6:
+      printf("0x00000006 SHT_DYNAMIC Dynamic linking informaiton \n");
+      break;
+    case 7:
+      printf("0x00000007 SHT_NOTE Notes \n");
+      break;
+    case 8:
+      printf("0x00000008 SHT_NOBITS Program space with no data \n");
+      break;
+    case 9:
+      printf("0x00000009 SHT_REL Relocation entrien no addends \n");
+    case 0x0a:
+      printf("0x0000000a SHT_SHLIB reserved \n");
+      break;
+    case 0x0b:
+      printf("0x0000000b SHT_DYNSYM Dynamic linker symbol table \n");
+      break;
+    case 0x0e:
+      printf("0x0000000e SHT_INIT_ARRAY Array of constructors \n");
+      break;
+    case 0x0f:
+      printf("0x0000000f SHT_FINI_ARRAY Array of destrcutors \n");
+      break;
+    case 0x10:
+      printf("0x00000010 SHT_PREINIT_ARRAY Array of preconstructors \n");
+    case 0x11:
+      printf("0x00000011 SHT_GROUP Section group \n");
+      break;
+    case 0x12:
+      printf("0x00000012 SHT_SYMTAB_INDEX Extended section indices \n");
+      break;
+    case 0x13:
+      printf("0x00000013 SHT_NUM Number of defined types \n");
+      break;
 
+    case 0x60000000:
+      printf("0x60000000 SHT_LOOS OS Specific");
+
+    default:
+      printf("No matching type for the given value");
+
+
+
+
+
+
+      
+    }
+}
 
 
 
@@ -575,7 +645,7 @@ int write_elf_header_32(const char * output_file_name, struct Elf32_Ehdr *elf_he
 
 int print_program_header(const char * in_file)
 {
-  FILE * fp = fopen(in_file);
+  FILE * fp = fopen(in_file, "rb");
 
   if (!in_file)
     {
@@ -585,7 +655,7 @@ int print_program_header(const char * in_file)
 
   // Looks for the program header in the elf header
 
-  if (fp->_IO_read_end - _IO_read_base < 64)
+  if (fp->_IO_read_end - fp->_IO_read_base < 64)
     {
       return -2;
     }
@@ -686,3 +756,35 @@ int print_program_header(const char * in_file)
   
 }
 
+int  print_section_headers(const char * in_file)
+{
+  FILE * fp = fopen(in_file, "rb");
+
+
+  if (!fp)
+    {
+      return -1;
+    }
+  
+  if (fp->_IO_read_end - fp->_IO_read_base < 64)
+    {
+      return -2;
+    }
+
+
+  int * sh_name;
+  fread(sh_name, 4, 1, fp);
+  printf("Offset 0x00: sh_name \n");
+  printf("%x", *sh_name);
+  
+  int * sh_type;
+  fread(sh_type, 4, 1, fp);
+  printf("Offset 0x04: sh_type \n");
+  
+
+
+
+
+
+
+}

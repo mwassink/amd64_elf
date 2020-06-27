@@ -1,0 +1,1 @@
+/usr/bin/cc    CMakeFiles/TestCharInstructions.dir/tokens+dependencies/get_instructions.c.o CMakeFiles/TestCharInstructions.dir/tokens+dependencies/TestCharInstructions.c.o  -o TestCharInstructions 

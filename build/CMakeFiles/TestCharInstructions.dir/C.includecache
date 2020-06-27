@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../tokens+dependencies/char_to_instructions.h
+stdio.h
+-
+stdlib.h
+-
+
+/home/mark/Documents/intel64xELF/tokens+dependencies/TestCharInstructions.c
+stdio.h
+-
+stdlib.h
+-
+char_to_instructions.h
+-
+
+/home/mark/Documents/intel64xELF/tokens+dependencies/char_to_instructions.h
+stdio.h
+-
+stdlib.h
+-
+
+/home/mark/Documents/intel64xELF/tokens+dependencies/get_instructions.c
+stdio.h
+-
+stdlib.h
+-
+char_to_instructions.h
+/home/mark/Documents/intel64xELF/tokens+dependencies/char_to_instructions.h
+

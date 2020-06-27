@@ -1,0 +1,1 @@
+/usr/bin/cc    CMakeFiles/TestGetInstructions.dir/tokens+dependencies/get_instructions.c.o CMakeFiles/TestGetInstructions.dir/tokens+dependencies/TestGetInstructions.c.o  -o TestGetInstructions 

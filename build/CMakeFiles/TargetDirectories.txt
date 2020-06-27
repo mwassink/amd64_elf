@@ -1,0 +1,4 @@
+/home/mark/Documents/intel64xELF/build/CMakeFiles/rebuild_cache.dir
+/home/mark/Documents/intel64xELF/build/CMakeFiles/edit_cache.dir
+/home/mark/Documents/intel64xELF/build/CMakeFiles/TestCharInstructions.dir
+/home/mark/Documents/intel64xELF/build/CMakeFiles/TestGetInstructions.dir
