@@ -7,6 +7,11 @@ enum operand_types {reg8, reg16, reg32, reg64, reg128, mem8,
 		    mem16, mem32, mem64, mem128, immediate8,
                     immediate16, immediate32, immediate64}; // TODO
 
+
+
+
+enum modes { Real, Protected, bit64, smm};
+
 struct instruction_attributes
 {
   int ring;
@@ -14,6 +19,7 @@ struct instruction_attributes
   int mode;
   enum operand_types operand1_allowed[64];
   enum operand_types  operand2_allowed[64];
+  enum modes allowed_modes[4];
 };
 
 
@@ -24,14 +30,15 @@ struct machine_instruction{
   unsigned char opcode[4];
   int opcode_length;
   unsigned char rex; // Includes MODRM and SIB
-  bool rex_needed;
-  unsigned char modrm;
-  bool modrm_needed;
-  unsigned char sib;
-  bool sib_needed;
+  bool rex_not_needed;
+  bool modrm_not_needed;
+  bool sib_not_needed;
   int displacement;
   unsigned char immediate[8];
   int immediate_length;
+  char * identifier;
+  struct instruction_attributes attributes;
+  
 };
 
 
@@ -74,26 +81,6 @@ struct sib
   int index : 3;
   int base : 3;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

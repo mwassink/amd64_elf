@@ -2,40 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/char_to_instructions.h"
-struct instruction_format {
+#include "../include/get_instructions.h"
 
-  int pooled;
-    unsigned char prefix; /* 0 if there is no prefix */
-    int prefix_OF;
-    unsigned char primary_opcode; /* 0 if this is a prefix or does not have one */
-    unsigned char secondary_opcode; /* 0 if this does not exist */
-    char reg_opcode_field; /* 0 if this is not specified	*/
-    unsigned char documentation; // below this should all be 1 normal letter so a signed char should be fine
-    unsigned char mode;
-    char ring_level;
-    unsigned char lock_prefix;
- 
-    char *mnemonic; //16
 
-    char *op1; //16
-    char *op2; //16
-    char *op3; //16
-    char *op4; //16
-    char *iext; //16
-    char *tested_flags; //16
-    char *modif_flags; //16
-    char *def_flags; //16
-    char *undef_flags; //16
-    char *flag_values; //16
-    char *fields; //5
-    unsigned long int ID;
-};
-
-struct ID_instr_pair
-{
-  struct instruction_format * instr_ptr;
-  unsigned long int ID;
-};
 
 
 
