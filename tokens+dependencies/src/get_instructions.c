@@ -4,7 +4,7 @@
 #include "../include/char_to_instructions.h"
 struct instruction_format {
 
-    int pooled;
+  int pooled;
     unsigned char prefix; /* 0 if there is no prefix */
     int prefix_OF;
     unsigned char primary_opcode; /* 0 if this is a prefix or does not have one */
@@ -27,6 +27,7 @@ struct instruction_format {
     char *def_flags; //16
     char *undef_flags; //16
     char *flag_values; //16
+    char *fields; //5
     unsigned long int ID;
 };
 
@@ -36,12 +37,7 @@ struct ID_instr_pair
   unsigned long int ID;
 };
 
-struct modrm
-{
-  unsigned int Mod : 2;
-  unsigned int opcode_extension : 3;
-  unsigned int rm : 3;
-};
+
 
 //static int prefixes[30] = {0x26, 0x2e, 0x36, 0x3e, 0x40, 0x41, 0x42, 0x43,
 //                         0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d,
@@ -84,6 +80,7 @@ void pool_memory(struct instruction_format *instr_ptr, char * char_pool_begin)
     instr_ptr->undef_flags = char_pool_begin + 144;
     instr_ptr->flag_values = char_pool_begin + 160; // up to 176
     instr_ptr->pooled = -1;
+    instr_ptr->fields = char_pool_begin + 176;
      // so that the pointer does not get lost and leaked
 }  
   
@@ -367,6 +364,7 @@ void write_instruction_stdout(struct instruction_format *instr)
   printf("def_flags %s \n", instr->def_flags);
   printf("undef_flags %s \n", instr->undef_flags);
   printf("flag_value %s \n", instr->flag_values);
+  printf("fields %s \n",instr->fields );
 }
 
 void example_print_value_binary()

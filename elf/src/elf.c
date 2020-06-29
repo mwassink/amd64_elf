@@ -320,10 +320,7 @@ int print_elf_header(const char * input_string)
             return -1;
         }
 
-    if (file_pointer->_IO_read_end - file_pointer->_IO_read_base < 64)
-      {
-	return -2;
-      }
+
     fread(buffer, 64, 1, file_pointer);
 
     print_buffer(buffer);
@@ -475,10 +472,6 @@ int populate_elf_header_64(const char * input_file, struct Elf64_Ehdr *elf_heade
 
   unsigned char buffer[64];
 
-  if (file_pointer->_IO_read_end - file_pointer->_IO_read_base < 64)
-    {
-      return -2;
-    }
 
   fread(buffer, 64, 1, file_pointer);
 
@@ -538,10 +531,7 @@ int populate_elf_header_32(const char * input_file, struct Elf32_Ehdr *elf_heade
 
   unsigned char buffer[64];
 
-  if (file_pointer->_IO_read_end - file_pointer->_IO_read_base < 64)
-    {
-      return -2;
-    }
+
 
   fread(buffer, 64, 1, file_pointer);
 
@@ -655,10 +645,6 @@ int print_program_header(const char * in_file)
 
   // Looks for the program header in the elf header
 
-  if (fp->_IO_read_end - fp->_IO_read_base < 64)
-    {
-      return -2;
-    }
 
   unsigned char buffer[64];
   fread(buffer, 64, 1, fp);

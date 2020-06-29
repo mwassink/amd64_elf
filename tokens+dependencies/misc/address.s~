@@ -1,0 +1,7 @@
+	.text
+	.globl main
+	.type main, @ function
+
+
+main:
+	leaq	%rax, 4(%rsi, %rdi , 4)
