@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-
+#include "../include/get_text_tokens.h"
 
 #define MAX_REGISTER_LETTER_LENGTH 4;
 
@@ -13,11 +13,7 @@
 
 // %rax, %rbx, %rcx,%rdx %rbp,%rsp,
 
-struct Register
-{
-  int ID;
-  unsigned short size;
-};
+
 
 
 void init_32_64_bit_old_register_from_string(char * input_string, struct  Register * input_register )
@@ -53,6 +49,7 @@ int  init_new_register_from_string(char * input_string, struct Register * input_
    not include the very new ones or features */
 
   /* This functin will look for different lengths, hence why the function asks for the length of the name */
+  
 
   if (register_name_length == 2)
     {
@@ -137,11 +134,11 @@ int * init_register_tokens()
 char * other_strings()
 {
   char * string_space = (char *)malloc(300); // Not sure of how many header strings and titles exist for the assembly
-  
-
-
-
 }
+
+
+
+
 
 
 

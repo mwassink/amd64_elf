@@ -3,10 +3,6 @@
 #include <stdbool.h>
 
 
-enum operand_types {reg8, reg16, reg32, reg64, reg128, mem8,
-		    mem16, mem32, mem64, mem128, immediate8,
-                    immediate16, immediate32, immediate64,
-                    mem, }; // TODO
 
 
 
@@ -18,7 +14,7 @@ struct instruction_attributes
   int ring;
   bool lockable;
   int mode;
-  enum operand_types operand1_allowed[64];
+  enum 
   enum operand_types  operand2_allowed[64];
   enum modes allowed_modes[4];
 };
