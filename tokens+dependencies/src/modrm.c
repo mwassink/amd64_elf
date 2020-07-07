@@ -194,7 +194,7 @@ void reg_table_byte_rex(struct temprm * temp, char * reg, bool is_first)
 	  else
 	    temp->second = 2;	  
 	}
-      if (reg[d] == 'b')
+      if (reg[0] == 'b')
 	{
 	  if (is_first)
 	    temp->first = 3;
@@ -253,6 +253,28 @@ void table_segment_register(struct temprm * temp, char * reg, bool is_first)
       
     }
 }
+
+void table_rm_mod00(struct temprm *temp, char * reg, bool is_first)
+{
+  // r/e ax, cx, bx, dx, ip, si, di
+  // This will be called when there is no disp8 or disp32, so
+  // The MOD specifies these options
+
+
+  // 00 refers to register indirect addressing or SIB with no displacement or displacement only addressing mode
+  // 01 refers to a 1-byte signed displacemnt following the addressing mode, so it knows that it coming e.g 0xAA
+  // 10 refers to a four-byte signed displacement follows the addressing mode bytes e.g 0xFFFFAAAA
+  // 11 Register addressing mode
+  // If I needed to encode an instruction with an offset but no fancy math, then I would use one of these
+  // e.g movq -0x12(%rax), %rbx. This would specify that there needs to be a disp8 byte, but no fancy addressing is needed
+  // So we just need the modrm
+  // 00 is a memory addressing operand, like 01 and 10
+
+
+}
+
+
+
 
 
 

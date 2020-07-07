@@ -67,7 +67,7 @@ struct modrm
 // 01001000 = 0x40 + 0x8 = 0x48
 // Need the actual instruction 8d
 // need the ModRM to specify the target operands
-// ModRM: 01 (register indirect) 100 Sib Follows 110 rsi is the target
+// ModRM: 01 (register indirect) and an 8 bit displacement follows 100 Sib Follows 110 rsi is the target
 // 01110100 = 0x74
 // 48 8d 74 be 04
 // ModR/M = 11 (scale) 101 (rsi) 111 (rdi) = be
