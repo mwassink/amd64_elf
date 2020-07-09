@@ -492,12 +492,76 @@ void table_rm_mod01(struct temprm *temp, char * reg, bool is_first, bool rex_r)
 
   else
     {
+      // for this we need to look at all the options and table them
 
+      switch (reg[number_disp_length])
+	{
+	case 'a':
+	  if (is_first)
+	    temp->first = 0;
+	  else
+	    temp->second = 0;
+	  break;
+	case 'c':
+	  if (is_first)
+	    temp->first = 1;
+	  else
+	    temp->second = 1;
+	  break;
+	case 'd':
+	  if (is_first && reg[number_disp_length + 1] == 'i')
+	    temp->first = 7;
+	  else if (!is_first && reg[number_disp_length + 1] == 'i')
+	    temp->second = 7;
+	  else if (is_first && reg[number_disp_length + 1] == 'x')
+	    temp->first = 2;
+	  else
+	    temp->second = 2;
+	  break;
+	case 'b':
+	  if (is_first)
+	    temp->first = 3;
+	  else
+	    temp->second = 3;
+	  break;
+	case 'i':
+	  if (is_first)
+	    temp->first = 5;
+	  else
+	    temp->second = 5;
+	  break;
+	case 's':
+	  if (is_first)
+	    temp->first = 6;
+	  else
+	    temp->second = 6;
+	  break;
+	}
+	    
+	    
 
 
 
       
     }
+}
+
+
+void table_rm_mod10(struct temprm * temp, char * reg, bool is_first)
+{
+  // For all of these they should have a 4 byte offset that is an immediate. If they can be expressed as one byte
+  // then what's the point?
+
+  int disp_length = 0;
+
+  while ((reg[disp_length] != '(' ) && disp_length);
+  // Disp length is now at the first parenthesis. Needs to be moved past it and the percent
+  disp_length += 2;
+
+  
+  
+
+  
 }
 
 

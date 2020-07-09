@@ -7,3 +7,7 @@ builds
 *.cmake
 *.bin
 *.marks
+tokens+dependencies/.vs/
+tokens+dependencies/.vs
+tokens+dependencies/.vs*
+tokens+dependencies/tokens*
