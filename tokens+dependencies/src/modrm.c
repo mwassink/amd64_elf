@@ -30,6 +30,59 @@ struct __instruction encode_registers_rm( char * op1,  char * op2, bool op1_rm)
 
 }
 
+
+
+void modrm_rex_r_switch (struct temprm *temp, char *reg_at_offset, bool is_first)
+{
+
+  switch (reg_at_offset[0])
+    {
+    case '8':
+      if (is_first)
+	temp->first = 0;
+      else
+	temp->second = 0;
+      break;
+    case '9':
+      if (is_first)
+	temp->first = 1;
+      else
+	temp->second = 1;
+      break;
+    case '1':
+      switch (reg[1])
+	{
+	case '0':
+	  if (is_first)
+	    temp->first = 2;
+	  else
+	    temp->second = 2;
+	  break;
+	case '1':
+	  if (is_first)
+	    temp->first = 3;
+	  else
+	    temp->second = 3;
+	  break;
+	case '4':
+	  if (is_first)
+	    temp->first = 6;
+	  else
+	    temp->second = 6;
+	  break;
+	case '5':
+	  if (is_first)
+	    temp->first = 7;
+	  else
+	    temp->second = 7;
+	  break;
+	}
+      break;
+	    
+  }
+  
+}
+
 void reg_table_register_new(struct temprm * temp, char * reg, bool is_first)
 {
   // This is for the new reigsters 
@@ -257,40 +310,40 @@ void reg_table_byte_rex(struct temprm * temp, char * reg, bool is_first)
 
 void table_segment_register(struct temprm * temp, char * reg, bool is_first)
 {
-  switch (reg[0])
+ switch (reg[0])
     {
-    case 'E':
+    case 'e':
       if (is_first)
 	temp->first = 0;
       else
 	temp->second = 0;
       break;
-    case 'C':
+    case 'c':
       if (is_first)
 	temp->first = 1;
       else
 	temp->second = 1;
       break;
-    case 'S':
+    case 's':
       if (is_first)
 	temp->first = 2;
       else
 	temp->second = 2;
       break;
     
-    case 'D':
+    case 'd':
       if (is_first)
 	temp->first = 3;
       else
 	temp->second = 3;
       break;
-    case 'F':
+    case 'f':
       if (is_first)
 	temp->first = 4;
       else
 	temp->second = 4;
       break;
-    case 'G':
+    case 'g':
       if (is_first)
 	temp->first = 5;
       else
@@ -321,6 +374,10 @@ void table_rm_mod00(struct temprm *temp, char * reg, bool is_first, bool rex_r) 
   //nonethreless  is is a memory addressing operand, so it will not take a register by itself
   // if a modrm uses a register it will just take 11 instead
 
+
+  // Example instruction movq (%rax), (%rbx) <------ (%rbx or ebx will be given to the function) looking for the bx part 
+
+  
   if (reg[0] != '('   && (reg[0] != '0' || reg[1] != 'x') ) // Not a number or the indexing parenthesis
     {
       fprintf(stderr, "The table_rm_mod00 was used improperly, proper usage requires a memory operand with no offset or an instruction pointer");
@@ -353,16 +410,93 @@ void table_rm_mod00(struct temprm *temp, char * reg, bool is_first, bool rex_r) 
 
   if (rex_r)
     {
-      // TODO
-      
-      
+      // Look for the third character which will be the register chosen
+      modrm_rex_r_switch(temp,  reg + 2, is_first);
     }
 
 
 
   else
     {
-      // TODO 
+      // The thing we are looking for is the third character in the register input
+      switch (reg[2])
+	{
+	case 'a':
+	  if (is_first)
+	    temp->first = 0;
+	  else
+	    temp->second = 0;
+	  break;
+	case 'c':
+	  if (is_first)
+	    temp->first = 1;
+	  else
+	    temp->second = 1;
+	  break;
+	case 'd':
+	  if (is_first && reg[3] == 'x')
+	    temp->first = 2;
+	  else if (is_first && reg[3] == 'i')
+	    temp->first = 7;
+	  else if (!is_first && reg[3] == 'x')
+	    temp->second = 2;
+	  else
+	    temp->second = 7;
+	  break;
+	case  'b':
+	  if (is_first)
+	    temp->first = 3;
+	  else
+	    temp->second = 3;
+	case 's':
+	  if (is_first)
+	    temp->first = 6;
+	  else
+	    temp->second = 6;
+	  break;
+	  
+	      
+	    
+	}
+    }
+}
+
+
+void table_rm_mod01(struct temprm *temp, char * reg, bool is_first, bool rex_r)
+{
+  // The first thing we want to look for is the 8 bit displacement, which will be processed into hexadecimal. This is useful because I do
+  // not want to go looking for a valid range for this. I know that the first characters will be a 0x
+
+
+
+
+  // EXAMPLE INSTRUCTION:     movq 0x32(%rax), %rbx
+  assert(reg[0] == '0' && reg[1] == 'x');
+
+  int number_disp_length = 0;
+
+  while (reg[number_disp_length] != '(' && number_disp_length++);
+
+  number_disp_length += 2; // Now it should have the proper offset to begin looking at the second character of the register
+  // (i.e not including the prefix ), but we do not care about this part for now
+
+
+  if (rex_r)
+    {
+      modrm_rex_r_switch(temp, reg + number_disp_length, is_first);
+      
+    }
+  
+
+
+
+  else
+    {
+
+
+
+
+      
     }
 }
 
