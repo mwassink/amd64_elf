@@ -50,7 +50,7 @@ void modrm_rex_r_switch (struct temprm *temp, char *reg_at_offset, bool is_first
 	temp->second = 1;
       break;
     case '1':
-      switch (reg[1])
+      switch (reg_at_offset[1])
 	{
 	case '0':
 	  if (is_first)
