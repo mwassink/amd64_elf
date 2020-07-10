@@ -320,9 +320,8 @@ void table_segment_register(struct temprm * temp, char * reg, bool is_first)
     }
 }
 
-void table_rm_mod00(struct temprm *temp, char * reg, bool is_first, bool rex_r) // Essentially this just means we have a rip pointer or no displacement
-{
-}
+void table_rm_mod00(struct temprm *temp, char * reg, bool is_first, bool rex_r); // Essentially this just means we have a rip pointer or no displacement
+
 
 
 void table_rm_mod01(struct temprm *temp, char * reg, bool is_first, bool rex_r);
