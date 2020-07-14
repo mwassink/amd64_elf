@@ -37,7 +37,7 @@ struct __instruction encode_registers_rm( char * op1,  char * op2, bool op1_rm)
       // The first operand is encoded with the rm
   fprintf(stderr, "Function is not complete yet");
 
-}
+};
 
 
 
