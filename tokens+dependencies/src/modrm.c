@@ -34,18 +34,18 @@ struct __instruction encode_registers_rm( char * op1,  char * op2, bool op1_rm)
 
 inline bool reg_string_compare (char  * in, char  * in2) // before, just cast the address to one of type int, compiler will know what to do 
 {
-  bool equal = 0;
-   asm ("movl (%1), %%r13d \n"
-	"movl (%2), %%r14d \n"
-         "cmp  %%r13d, %%r14d \n"
-         "jne  done \n"
-	"movl 1, %0 \n"
-         "done: movl %0, %%eax;"
-	: "=r" (equal)
-	: "r" (in), "c" (in2)
-	:
-        );
-   return equal;
+    int* lhs = (int*)in;
+    int* rhs = (int*)in2;
+    // Mask the last bit if it is a ), this would mean it would have length 3
+    // By masking the last bit, I know that a comparison against a null character will work
+    // However, other ones might need this
+    if (((*in) & 0x000000FF) == ')')
+    {
+        *lhs &= 0xFFFFFF00; // Not a big deal if the memory is altered 
+        return *lhs = *rhs;
+    }
+    else
+        return *lhs = *rhs;
 }
 
 int mod00_table(char* in)
@@ -289,12 +289,12 @@ int mod10_01_table(char* in)
     else
     {
         //Must be one of the new registers
-        if (reg_string_compare(in, "%r8)"))
+        if (reg_string_compare(in, "%r8")) // in2 will be null terminated`
         {
             return 0;
         }
 
-        else if (reg_string_compare(in, "%r9)"))
+        else if (reg_string_compare(in, "%r9")) // in2 will be null terminated
         {
             return 1;
         }
@@ -334,18 +334,258 @@ int mod10_01_table(char* in)
 
 }
 
-int mod11_r(char* in);
-int mod11_e(char* in);
-int mod11_st(char* in);
-int mod11_mm(char* in);
-int mod11_xmm(char* in);
-int mod11_rex(char* in);
+int mod11_r(char* in)
+{
+    // The given prefix is r, so we have %REG
 
-int mod11_table(char* in)
+    if (reg_string_compare(in, "%rax"))
+    {
+        return 0;
+    }
+
+    else if (reg_string_compare(in, "%rcx"))
+    {
+        return 1;
+    }
+    
+    else if (reg_string_compare(in, "%rdx"))
+    {
+        return 2;
+    }
+
+    else if (reg_string_compare(in, "%rbx"))
+    {
+        return 3;
+    }
+
+    else if (reg_string_compare(in, "%rsp"))
+    {
+        return 4;
+    }
+
+    else if (reg_string_compare(in, "%rbp"))
+    {
+        return 5;
+    }
+
+    else if (reg_string_compare(in, "%rsi"))
+    {
+        return 6;
+    }
+
+    else if (reg_string_compare(in, "%rdi"))
+    {
+        return 7;
+    }
+
+    else
+    {
+        fprintf(stderr, "Improper usage for the mod11_r");
+        return -1;
+    }
+
+    
+
+}
+int mod11_e(char* in)
+{
+    if (reg_string_compare(in, "%eax"))
+    {
+        return 0;
+    }
+
+    else if (reg_string_compare(in, "%ecx"))
+    {
+        return 1;
+    }
+
+    else if (reg_string_compare(in, "%edx"))
+    {
+        return 2;
+    }
+
+    else if (reg_string_compare(in, "%ebx"))
+    {
+        return 3;
+    }
+
+    else if (reg_string_compare(in, "%esp"))
+    {
+        return 4;
+    }
+
+    else if (reg_string_compare(in, "%ebp"))
+    {
+        return 5;
+    }
+
+    else if (reg_string_compare(in, "%esi"))
+    {
+        return 6;
+    }
+
+    else if (reg_string_compare(in, "%edi"))
+    {
+        return 7;
+    }
+
+    else
+    {
+        fprintf(stderr, "Improper usage for the mod11_e");
+        return -1;
+    }
+
+
+
+}
+int mod11_st(char* in)
+{
+    // There are just 8 registers for this st0 - st7
+    return in[3] - 48;
+}
+
+int mod11_mm(char* in)
+{
+    return in[3] - 48;
+}
+
+int mod11_xmm(char* in)
+{
+    int disp_offset = 0;
+
+    while (in[disp_offset] != ')' && disp_offset++);
+    in[disp_offset] = 0;
+
+    int num_label = atoi(in + disp_offset);
+
+    return num_label % 8;
+}
+
+int mod11_rex(char* in)
+{
+    // This one requires one of the newer registers (extensions)
+    // r8, r9, r10, etc
+    // Move to the front of the word with the )
+
+    int disp = 0;
+    while (in[disp++] != ')'); // will overshoot by one
+    disp--;
+    in[disp] = 0; // Now everything after the number will be null terminated
+    return atoi(++in); // Hopefully this will be passed in with the percent sign coming first
+    
+}
+
+int mod11_others(char* in)
+{
+    // This function will be used for the registers without easy to look for prefixes 
+    // May be useful for high, low, etc,
+    // 5 categories  x, l, h, p, i
+    // Expected usage: %ax
+    
+    switch (in[2])
+    {
+    case 'l': // Low register
+        if (in[1] == 'a')
+            return 0;
+        else if (in[1] == 'c')
+            return 1;
+        else if (in[1] == 'd')
+            return 2;
+        else if (in[1] == 'b')
+            return 3;
+        else
+        {
+            fprintf(stderr, "Improper usage of the mod11_others function, looking for a low byte");
+        }
+        break;
+    case 'x': // General purpose register, looking to use 2 bytes 
+        if (in[1] == 'a')
+            return 0;
+        else if (in[1] == 'c')
+            return 1;
+        else if (in[1] == 'd')
+            return 2;
+        else if (in[1] == 'b')
+            return 3;
+        else
+        {
+            fprintf(stderr, "Improper usage of the mod11_others function, looking for a general register");
+        }
+        break;
+    case 'h': // Looking for the high byte
+        if (in[1] == 'a')
+            return 4;
+        else if (in[1] == 'c')
+            return 5;
+        else if (in[1] == 'd')
+            return 6;
+        else if (in[1] == 'b')
+            return 7;
+        else
+        {
+            fprintf(stderr, "Improper usage of the mod11_others function, looking for a high byte");
+        }
+        break;
+    case 'p': // For one of the pointers 
+        if (in[1] == 's')
+            return 4;
+        else if (in[1] == 'b')
+            return 5;
+        else
+        {
+            fprintf(stderr, "Improper usage of the mod11_others function, looking for a base or stack ptr");
+        }
+
+    case 'i':
+        if (in[1] == 's')
+            return 6;
+        else if (in[1] == 'd')
+            return 7;
+        else
+        {
+            fprintf(stderr, "Improper usage for the mod11_others, looking for destination index");
+        }
+    }
+
+}
+
+
+int mod11_table(char* in)   
 {
     // The first thing to look for  is prefixes after the percent sign:
     // e, r, st, mm, xmm, r(extension)
 
+    // in example %rax the second character will be the prefix or the lack of the prefix
+    bool finished = 1;
+    switch (in[1])
+    {
+    case 'e':
+        mod11_e(in);
+        break;
+    case 'm':
+        mod11_mm(in);
+        break;
+    case 'r': // Not as easy as the other ones
+        if (needs_rex_r(in))
+        {
+            mod11_rex(in);
+        }
+        else
+        {
+            mod11_r(in);
+        }
+        break;
+    case 's':
+        mod11_st(in);
+        break;
+    case 'x':
+        mod11_xmm(in);
+        break;
+    default:
+        finished = 0;
+    }
+
+    
 
 }
 
@@ -393,7 +633,7 @@ int ret_mod(char * input)
 
 inline bool needs_rex_r(char * reg)
 {
-  return (reg[1] > 47 && reg[1] < 58);
+  return (reg[2] > 47 && reg[2] < 58);
 }
 
 
