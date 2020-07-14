@@ -7,6 +7,15 @@
 #include <assert.h>
 
 // NOTE: The file should be preprocessed before to standardize the input registers
+// In order for this to be pulled together:
+
+// Need to look for the beginning characters in the string to decide which one is the register or which one is the memory
+// If it has parenthesis then it needs a memory operand, and the other one must be a register
+// the register functions will be used on the register, and the mod function will be used on the memory 
+
+// Unfortunately this cannot be pulled together without a Sib file to table that 
+// That will need to be included at the top of this with a header file
+// Also, this corresponding header file  needs to be updated 
 
 int ascii_to_int_hex(char * input)
 {
@@ -556,34 +565,31 @@ int mod11_table(char* in)
     // e, r, st, mm, xmm, r(extension)
 
     // in example %rax the second character will be the prefix or the lack of the prefix
-    bool finished = 1;
+    
     switch (in[1])
     {
     case 'e':
-        mod11_e(in);
-        break;
+        return mod11_e(in);
     case 'm':
-        mod11_mm(in);
-        break;
+        return mod11_mm(in);
     case 'r': // Not as easy as the other ones
         if (needs_rex_r(in))
         {
-            mod11_rex(in);
+            return mod11_rex(in);
         }
         else
         {
-            mod11_r(in);
+            return mod11_r(in);
         }
-        break;
     case 's':
-        mod11_st(in);
-        break;
+        return mod11_st(in);
     case 'x':
-        mod11_xmm(in);
-        break;
+        return mod11_xmm(in);
     default:
-        finished = 0;
+        return mod11_others(in);
     }
+
+    
 
     
 

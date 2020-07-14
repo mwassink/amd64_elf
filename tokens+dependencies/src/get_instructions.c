@@ -371,8 +371,9 @@ void print_binary(unsigned long int input_number)
 {
   printf("The number %lX in binary is: \n", input_number);
 
-  unsigned long int shift = 1;
-  for (shift <<= 63; shift != 0; shift>>=1)
+  unsigned long int shift = 1; // Should have a size of 64 bits
+  int shift_size = sizeof(input_number) * 8;
+  for (shift <<= shift_size; shift != 0; shift>>=1)
     (input_number & shift)? printf("1"): printf("0");
 }
 
