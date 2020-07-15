@@ -46,10 +46,11 @@ void pool_memory(struct instruction_format *instr_ptr, char * char_pool_begin)
     instr_ptr->iext = char_pool_begin + 96;
     instr_ptr->tested_flags = char_pool_begin + 112;
     instr_ptr->modif_flags = char_pool_begin + 128;
-    instr_ptr->undef_flags = char_pool_begin + 144;
-    instr_ptr->flag_values = char_pool_begin + 160; // up to 176
+    instr_ptr->def_flags = char_pool_begin + 144;
+    instr_ptr->undef_flags = char_pool_begin + 160;
+    instr_ptr->flag_values = char_pool_begin + 176; // up to 176
     instr_ptr->pooled = -1;
-    instr_ptr->fields = char_pool_begin + 176;
+    instr_ptr->fields = char_pool_begin + 192;
      // so that the pointer does not get lost and leaked
 }  
   
