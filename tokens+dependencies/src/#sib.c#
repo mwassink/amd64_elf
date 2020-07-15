@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include "../include/modrm.h"
 #include <assert.h>
@@ -234,10 +233,33 @@ struct sib_byte full_sib_instruction(struct sib* sib_in, int mod)
     else
         returned_value.index = sib_regular_table_index(sib_in->index, mod);
 
-    returned_value.ss = sib_in->scale;
-
-    return returned_value;
-
 }
+
+/*
+int table_base_and_index(char * in) // argument of the form %rax
+{
+  // Look for one of the newer GPRs first
+  if (needs_rex_r(in))
+    sib_rexr_table(in);
+
+  else
+    sib_regular_table(in);
+    
+    
+}
+*/
+
+
+
+/*
+int sib_from_knowns(char * base, char * index, int scale)
+{
+  // somewhere down the line, if the user uses a scale other than 1 2 4 or 8 then the assembler has to  throw a fit
+  // This function will not as it expects processed arguments
+
+
+  
+}
+*/	      
 
 

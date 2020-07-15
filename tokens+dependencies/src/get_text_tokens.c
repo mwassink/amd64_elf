@@ -120,7 +120,7 @@ int * init_register_tokens()
                             "rsi", "esi", "si", "sil", "rdi", "edi", "di", "dil",
 			    "rip", "eip", "ip"}; /* 45 */
 
-  int * ID_array = malloc(180)
+  int* ID_array = malloc(180);
   
   for (int i = 0; i < 45; ++i)
     {
