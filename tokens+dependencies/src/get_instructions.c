@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../include/char_to_instructions.h"
 #include "../include/get_instructions.h"
-
+#include <string.h>
 
 
 
@@ -51,6 +51,9 @@ void pool_memory(struct instruction_format *instr_ptr, char * char_pool_begin)
     instr_ptr->flag_values = char_pool_begin + 176; // up to 176
     instr_ptr->pooled = -1;
     instr_ptr->fields = char_pool_begin + 192;
+    
+    memset(instr_ptr->mnemonic, 0, 208);
+    
      // so that the pointer does not get lost and leaked
 }  
   
@@ -227,8 +230,8 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
         offset = 0;
         for (; counter < 21;)
             {
-
-                char out = fgetc(fileptr);
+            char* prev = NULL;
+            char out = fgetc(fileptr);
 
                 if (out == ',')
                     {
@@ -309,6 +312,12 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
             else
               instr->ID = 0;
 
+            char out = 0;
+            while (out != '\n')
+            {
+                out = fgetc(fileptr);
+            }
+
 }
 
 void write_instruction_stdout(struct instruction_format *instr)
@@ -318,10 +327,10 @@ void write_instruction_stdout(struct instruction_format *instr)
   printf("Primary opcode: %X \n", instr->primary_opcode);
   printf("Secondary opcode %X \n", instr->secondary_opcode);
   printf("Reg Opcode Field: %c \n", instr->reg_opcode_field);
-  printf("Documentation %c \n", instr->documentation);
+  printf("Documentation: %c \n", instr->documentation);
   printf("Mode: %c \n", instr->mode);
   printf("Ring Level %c \n", instr->ring_level);
-  printf("Lock Prefix: %c", instr->lock_prefix);
+  printf("Lock Prefix: %c\n", instr->lock_prefix);
 
   printf("Mnemonic: %s \n", instr->mnemonic);
   printf("op1 %s \n", instr->op1);
@@ -334,7 +343,7 @@ void write_instruction_stdout(struct instruction_format *instr)
   printf("def_flags %s \n", instr->def_flags);
   printf("undef_flags %s \n", instr->undef_flags);
   printf("flag_value %s \n", instr->flag_values);
-  printf("fields %s \n",instr->fields );
+  printf("fields (currently not finished)%s \n",instr->fields );
 }
 
 void example_print_value_binary()

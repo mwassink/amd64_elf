@@ -229,7 +229,7 @@ struct sib_byte full_sib_instruction(struct sib* sib_in, int mod)
     else
         returned_value.base = sib_regular_table_base(sib_in->base, mod);
 
-    if (needs_rex_r(sib_in->index, mod))
+    if (needs_rex_r(sib_in->index))
         returned_value.index = sib_rexr_table_index(sib_in->index, mod);
     else
         returned_value.index = sib_regular_table_index(sib_in->index, mod);
