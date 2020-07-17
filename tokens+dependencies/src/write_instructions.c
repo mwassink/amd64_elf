@@ -15,21 +15,20 @@ int main()
             return -1;
 
 	
-	
-	struct instruction_format test_one_instruction;
-	char* char_pool_begin = (char*)malloc(250);
-	pool_memory(&test_one_instruction, char_pool_begin);
-	gather_instruction(&test_one_instruction, fp);
-	write_instruction_stdout(&test_one_instruction);
-	free(char_pool_begin);
-	
+	for (int i = 0; i < 1074; ++i)
+	  {
+	    struct instruction_format test_one_instruction;
+	    char* char_pool_begin = (char*)malloc(250);
+	    pool_memory(&test_one_instruction, char_pool_begin);
+	    gather_instruction(&test_one_instruction, fp);
+	    write_instruction_stdout(&test_one_instruction);
+	    free(char_pool_begin);
+	  }
 
 	// After to see where the fgetc goes
-	char* newer_pool = (char*)malloc(250);
-	pool_memory(&test_one_instruction, newer_pool);
-	gather_instruction(&test_one_instruction, fp);
-	write_instruction_stdout(&test_one_instruction);
-	free(newer_pool);
-
+	// The text file has 1074 lines and as such will be looped 1074 times
+	// So the previous lines are not necessary
+	// perhaps after this is done this can be redirected to another file
+	
 
 }
