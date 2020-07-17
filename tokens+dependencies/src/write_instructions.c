@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include "../include/get_text_tokens.h"
 #include "../include/get_instructions.h"
-
+#include <stdlib.h>
 
 
 int main()
 {
 	// Start with the file and a handle on the file 
-	FILE* fp = fopen("misc/instructions.txt", "r");
+        FILE* fp = fopen("../misc/instructions.txt", "r");
 	// The file should now be opened
 	if (!fp)
-		return 1;
+            fp = fopen("misc/instructions.txt", "r");
+        if (!fp)
+            return -1;
 
 	
 	

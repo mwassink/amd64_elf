@@ -111,30 +111,10 @@ int initialize_register_ID( char * null_term_reg)
   return returned_value;
 }
 
-int * init_register_tokens()
-{
-  const char * strings[] = {"rax", "rbx", "rcx", "rdx", "eax", "ebx", "ecx", "edx",
-			    "ax", "bx", "cx", "ah", "bh", "ch", "dh", "al", "bl",
-			    "cl", "dl", "dx", "rsp", "esp", "sp", "spl", "rbp"
-			    ,"ebp", "bp", "bpl", "cs", "ds", "ss", "es", "fs", "gs",
-                            "rsi", "esi", "si", "sil", "rdi", "edi", "di", "dil",
-			    "rip", "eip", "ip"}; /* 45 */
 
-  int* ID_array = malloc(180);
-  
-  for (int i = 0; i < 45; ++i)
-    {
-     ID_array[i] = initialize_register_ID(strings[i]);
-    }
 
-  return ID_array;
 
-}
 
-char * other_strings()
-{
-  char * string_space = (char *)malloc(300); // Not sure of how many header strings and titles exist for the assembly
-}
 
 
 

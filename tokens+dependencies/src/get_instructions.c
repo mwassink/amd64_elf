@@ -230,7 +230,7 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
         offset = 0;
         for (; counter < 21;)
             {
-            char* prev = NULL;
+            
             char out = fgetc(fileptr);
 
                 if (out == ',')
