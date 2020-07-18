@@ -61,25 +61,47 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
 
   // $ denotes immediate, number will denote offset, ( will denote a mem, % just reg
 
-  if (input_string[offset] == '(')
+  if (input_string[offset] == '(') // Thsi is a memory operand, probably does need some type of special loop until the next parentheses
     {
       arguments->op1 = memory;
-    }
-
-  else if (input_string[offset] == '%') // this is a register
-      arguments->op1 = reg;
-
-  else if (input_string[offset] > 48 && input_string[offset]  < 58) // should be an integer 
-    arguments->op1 = memory;
-
-  else
-    arguments->op1 = immediate;
-  
-  for (int i = 0; input_string[offset] != ' '; ++offset)
+      for (int i = 0; input_string[offset] != ')'; ++offset)
 	{
 	  op1_mnemonic[i] = input_string[offset];
 	}
+    }
 
+  else if (input_string[offset] == '%') // this is a register, does not need a special loop
+    {arguments->op1 = reg;
+      for (int i = 0; input_string[offset] != ' '; ++offset)
+	{
+	  op1_mnemonic[i] = input_string[offset];
+	}
+    }
+
+  else if (input_string[offset] > 48 && input_string[offset]  < 58) // should be an integer or a 0 which would signify an offset
+    {
+      arguments->op1 = memory;
+      for (int i = 0; input_string[offset] != ')'; ++offset)
+	{
+	  op1_mnemonic[i] = input_string[offset];
+	}
+    }
+  // Otherwise it should be an immediate
+  else
+    {
+      arguments->op1 = immediate; // Now we need to loop until the space is found
+      
+    }
+  // Add the word to the above contrainsts, make the struct point at them 
+  
+
+  // THE FIRST ARG should be processed, now onto the second
+
+  for (; input_string[offset] == ' '; ++offset);
+
+  if (input_string[offset] != ',') // it should always be some type of comma
+
+  
   // NOT DONE
   
   // TODO: Make the array of instructions from the table and the structs of instructions
