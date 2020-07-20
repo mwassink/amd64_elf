@@ -17,5 +17,4 @@ tokens+dependencies/bin
 tokens+dependencies/bin*
 tokens+dependencies/objects
 tokens+dependencies/objects*
-.ccls-cache
-.ccls-cache/
+
