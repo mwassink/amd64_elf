@@ -5,7 +5,7 @@
 #include "char_to_instructions.h"
 
 struct instruction_format {
-
+    // might have alignment issues, be careful
   int pooled;
     unsigned char prefix; /* 0 if there is no prefix */
     int prefix_OF;

@@ -260,9 +260,10 @@ int look_for_mnemonic(char *instr_mnemonic, int* shorter_mnemonics, int* longer_
 	}
 
       else
-	{
-	  fprintf("No mnemonic could be found with the usage for the")
-	}
+	    {
+          fprintf(stderr, "No mnemonic could be found with the mnemonic on this line");
+          assert(0 == 1);
+	    }
     }
     
 

@@ -38,3 +38,7 @@ int rip_suffix(char *instruction_mnemonic);
 void check_memory_operand(struct instruction_pieces* in);
 void assert_dependencies(struct instruction_pieces *in); // TODO
 int write_modrm(struct instruction_pieces *in);
+
+
+
+#endif
