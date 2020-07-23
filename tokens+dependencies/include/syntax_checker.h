@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+enum Sections {_text, _bss, data};
+enum Basic_Operands {immediate, memory, reg, sib};
+
+
 struct instruction_pieces
 {
   char * instruction_mnemonic;

@@ -5,18 +5,29 @@
 #include "../include/syntax_checker.h"
 #include <stdbool.h>
 #include "../include/sib.h"
+#include <math.h>
+
 // This file needs to go through line by line and check for tokens. It will just look for whitespace and endlines
 
-enum Sections { _text, _bss, data};
-enum Basic_Operands {immediate, memory, reg, sib};
 
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
 
 
 
+int ascii_to_int( char * in)
+{
+  int temp = 0;
+  int sum = 0;
 
-
+  while (in[temp] != '(' )
+    {
+      sum *= 10;
+      sum += (in[temp]-48);
+      ++temp;
+    }
+  return sum;
+}
 
 void search_line(FILE * in, struct instruction_pieces *arguments)
 {
@@ -27,7 +38,7 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
   size_t line_length;
   int offset = 0;
   // Hopefully whoever wrote the assembly makes good use of endlines
-  line_length  = getline(&input_string, &line_length, in);
+  line_length  = getline(&input_string, &line_length, in); // Should not be able to distinguish between these when called
   char label[100] = {0};
   char mnemonic[16] = {0};
   char op1_mnemonic[16] = {0};
@@ -287,9 +298,44 @@ int look_for_reg(char *reg_in, int *reg_array)
 
 }
 
- void check_memory_operand(struct instruction_pieces* in)
+static inline int check_for_offset(char * string)
+{
+  // Should return the number of bytes for the offset
+  int length_counter = 2;
+  if (string[0] == '0') // Hexadecimal number
+    {
+      // Hexadecimal offset or a number
+      for (; string[length_counter] >= 48 && string[length_counter] < 58; ++ length_counter);
+
+      if ((length_counter -2) > 2) // Need more than one byte to process this
+	return 4;
+      else
+	return 1;
+    }
+
+  else if  (string[0] >= 48 && string[0] < 58)
+    {
+      // This is just a decimal offset
+      if (ascii_to_int(string)  > 255)
+	{
+	  return 1;
+	}
+
+      else
+	return 4;    
+    }
+  
+  else
+    return 0;
+}
+
+      
+
+void check_memory_operand(struct instruction_pieces* in) // Should be a given that this is a memroy type
  {
-   // Needs to check for the type
+   // Needs to check for an offset first
+   
+   
  }
 
 
