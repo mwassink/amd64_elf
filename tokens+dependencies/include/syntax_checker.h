@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 enum Sections {_text, _bss, data};
 enum Basic_Operands {immediate, memory, reg, sib};
@@ -19,6 +20,16 @@ struct instruction_pieces
   int op2_size;
   char * op2_mnemonic;
   int size;
+};
+
+
+struct memory_op_info
+{
+  int offset;
+  int args;
+  int sib_scale;
+  int reg1, reg2;
+  bool sib;
 };
 
 /* struct sib
@@ -39,7 +50,7 @@ int  look_for_mnemonic(char *instr_mnemonic, int* shorter_mnemonics, int* longer
 void search_line(FILE * in, struct instruction_pieces *arguments);
 int  binary_lookup(int in, int* array_in);
 int rip_suffix(char *instruction_mnemonic);
-void check_memory_operand(struct instruction_pieces* in);
+struct memory_op_info check_memory_operand(struct instruction_pieces* in);
 void assert_dependencies(struct instruction_pieces *in); // TODO
 int write_modrm(struct instruction_pieces *in);
 

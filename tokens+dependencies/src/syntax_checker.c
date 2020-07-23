@@ -15,7 +15,7 @@
 
 
 
-int ascii_to_int( char * in)
+int ascii_to_int( char * in, int *returned_index)
 {
   int temp = 0;
   int sum = 0;
@@ -26,6 +26,7 @@ int ascii_to_int( char * in)
       sum += (in[temp]-48);
       ++temp;
     }
+  *returned_index = temp; // The last one will be the parentheses
   return sum;
 }
 
@@ -298,14 +299,16 @@ int look_for_reg(char *reg_in, int *reg_array)
 
 }
 
-static inline int check_for_offset(char * string)
+static inline int check_for_offset(char * string, int *start_parentheses)
 {
   // Should return the number of bytes for the offset
-  int length_counter = 2;
+  int length_counter = 0;
   if (string[0] == '0') // Hexadecimal number
     {
       // Hexadecimal offset or a number
       for (; string[length_counter] >= 48 && string[length_counter] < 58; ++ length_counter);
+
+      *start_parentheses = length_counter;
 
       if ((length_counter -2) > 2) // Need more than one byte to process this
 	return 4;
@@ -316,7 +319,7 @@ static inline int check_for_offset(char * string)
   else if  (string[0] >= 48 && string[0] < 58)
     {
       // This is just a decimal offset
-      if (ascii_to_int(string)  > 255)
+      if (ascii_to_int(string, start_parentheses)  > 255)
 	{
 	  return 1;
 	}
@@ -331,10 +334,26 @@ static inline int check_for_offset(char * string)
 
       
 
-void check_memory_operand(struct instruction_pieces* in) // Should be a given that this is a memroy type
+struct memory_op_info check_memory_operand(struct instruction_pieces* in) // Should be a given that this is a memroy type
  {
    // Needs to check for an offset first
+   int length_counter = 0;
+   int returned = check_for_offset(in->op1_mnemonic, &length_counter);
    
+   if (returned == 0) // no offset
+     {
+       // This doesn't necessarily call the mod00 because it may need to call for sib, stay tuned
+     }
+
+   else if (returned == 1)
+     {
+
+     }
+
+   else // the value of this should be 4
+     {
+
+     }
    
  }
 
