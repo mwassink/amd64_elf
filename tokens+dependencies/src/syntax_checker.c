@@ -13,8 +13,19 @@
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
 
+void init_op_info(struct memory_op_info *in)
+{
+  in->disp_length = 0;
+  in->disp_offset = -1;
+  in->reg1_off = -1;
+  in->reg2_off = -1;
+  in->sib = 0;
+  in->sib_scale = 0;
+}
 
 
+
+  
 int ascii_to_int( char * in, int *returned_index)
 {
   int temp = 0;
@@ -299,17 +310,29 @@ int look_for_reg(char *reg_in, int *reg_array)
 
 }
 
-static inline int check_for_offset(char * string, int *start_parentheses)
+static inline int check_for_offset(char * string, int *start_parentheses, int *disp_value)
 {
   // Should return the number of bytes for the offset
-  int length_counter = 0;
-  if (string[0] == '0') // Hexadecimal number
+  int length_counter = 2;
+  int total = 0
+  if (string[0] == '0' && string[1] == 'x') // Hexadecimal number
     {
       // Hexadecimal offset or a number
-      for (; string[length_counter] >= 48 && string[length_counter] < 58; ++ length_counter);
+      for (; string[length_counter] >= 48 && string[length_counter] < 58; ++length_counter)
+	{
+	  char temp = string[length_counter] - 48;
+	  total |= temp;
+	  total <<= 4;
+	}
 
       *start_parentheses = length_counter;
 
+      if (length_counter - 2 > 8) // Too big
+	{
+	  fprintf(stderr, "Disp is greater than 8 bytes");
+	  assert(0 == 1);
+	}
+      
       if ((length_counter -2) > 2) // Need more than one byte to process this
 	return 4;
       else
@@ -333,16 +356,32 @@ static inline int check_for_offset(char * string, int *start_parentheses)
 }
 
       
-
+// Don't write yet, we need to know whether it is an sib,etc
 struct memory_op_info check_memory_operand(struct instruction_pieces* in) // Should be a given that this is a memroy type
  {
    // Needs to check for an offset first
+   struct memory_op_info info;
+   init_op_info(&info);
    int length_counter = 0;
-   int returned = check_for_offset(in->op1_mnemonic, &length_counter);
+   int disp_value = 0;
+   int returned = check_for_offset(in->op1_mnemonic, &length_counter, &disp_value);
+   // Make a loop to look for the next thing other than a space
+   length_counter++;
+   for (; in->op1_mnemonic[length_counter] == ' '; ++length_counter);
+   // Now the length counter should be at the right spot for the memory mnemonic
+   if (op1_mnemonic[length_counter] != '%') // Not a register
+     {
+       fprintf(stderr, "Improper usage with the op1_mnemonic and memory");
+       fprintf(stderr, "The op1_mnemonic needs a register after the parentheses");
+       assert(0 == 1);
+     }
+
    
    if (returned == 0) // no offset
      {
        // This doesn't necessarily call the mod00 because it may need to call for sib, stay tuned
+       
+       
      }
 
    else if (returned == 1)

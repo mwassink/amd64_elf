@@ -25,11 +25,12 @@ struct instruction_pieces
 
 struct memory_op_info
 {
-  int offset;
-  int args;
-  int sib_scale;
-  int reg1, reg2;
-  bool sib;
+  int disp_offset;
+  int disp_length;
+  int disp;
+  int sib_scale; // -1 if not available
+  int reg1_off, reg2_off; // -1 if the register does not exist
+  bool sib; // Good easy way to check for the sib byte 
 };
 
 /* struct sib
