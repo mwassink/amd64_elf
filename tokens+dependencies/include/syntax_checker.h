@@ -47,12 +47,12 @@ struct memory_op_info
 
 void _text_checker(FILE * in);
 void process_arguments(struct instruction_pieces *arguments);
-int  look_for_mnemonic(char *instr_mnemonic, int* shorter_mnemonics, int* longer_mnemonics);
+int  look_for_mnemonic(char *instr_mnemonic, unsigned long int* shorter_mnemonics, unsigned long int* longer_mnemonics);
 void search_line(FILE * in, struct instruction_pieces *arguments);
-int  binary_lookup(int in, int* array_in);
+int binary_lookup(unsigned long int in, unsigned long int* array_in);
 int rip_suffix(char *instruction_mnemonic);
-struct memory_op_info check_memory_operand(struct instruction_pieces* in);
-void assert_dependencies(struct instruction_pieces *in); // TODO
+struct memory_op_info check_memory_operand(char * memory_instruction_in);
+void assert_dependencies(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics);
 int write_modrm(struct instruction_pieces *in);
 
 

@@ -178,7 +178,7 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
   
   // TODO: Make the array of instructions from the table and the structs of instructions
   // Along with the IDs of the instructions
-int binary_lookup(int in, int* array_in)
+int binary_lookup(unsigned long int in, unsigned long int* array_in)
 {
   int high = 1073;
   int low = 0;
@@ -234,7 +234,7 @@ int rip_suffix(char *instruction_mnemonic)
 }
 
   
-int look_for_mnemonic(char *instr_mnemonic, int* shorter_mnemonics, int* longer_mnemonics)
+int look_for_mnemonic(char *instr_mnemonic, unsigned long int* shorter_mnemonics, unsigned long int* longer_mnemonics)
 {
   // The string should be converted to an int after the % register
   // Will be compared against the other ints, but in a struct array?
@@ -243,14 +243,14 @@ int look_for_mnemonic(char *instr_mnemonic, int* shorter_mnemonics, int* longer_
   // There are 1074 arguments --> 0-1073
   unsigned long int name_id;
   int stripped  = -1; 
-  name_id = name_to_id(instr_mnemonic);
+  name_id = name_to_id(instr_mnemonic); // eval to 0 if this is too long
   int index = -1;
   
   if (!name_id)
     index = binary_lookup(name_id, longer_mnemonics);
 
   else
-    index = binary_lookup(name_id, longer_mnemonics);
+    index = binary_lookup(name_id, shorter_mnemonics);
 
   if (index != -1) // found
     return index;
@@ -293,10 +293,10 @@ int look_for_mnemonic(char *instr_mnemonic, int* shorter_mnemonics, int* longer_
 
 }
 
-int look_for_reg(char *reg_in, int *reg_array)
+int look_for_reg(char *reg_in, unsigned long int *reg_array)
 {
   // start with the percent symbol % and move forward one
-  int reg_no = name_to_id(reg_in+1);
+  unsigned long int reg_no = name_to_id(reg_in+1);
   int index = binary_lookup(reg_no, reg_array);
 
   if (index != -1)
@@ -314,7 +314,7 @@ static inline int check_for_offset(char * string, int *start_parentheses, int *d
 {
   // Should return the number of bytes for the offset
   int length_counter = 2;
-  int total = 0
+  int total = 0;
   if (string[0] == '0' && string[1] == 'x') // Hexadecimal number
     {
       // Hexadecimal offset or a number
@@ -357,19 +357,22 @@ static inline int check_for_offset(char * string, int *start_parentheses, int *d
 
       
 // Don't write yet, we need to know whether it is an sib,etc
-struct memory_op_info check_memory_operand(struct instruction_pieces* in) // Should be a given that this is a memroy type
+struct memory_op_info check_memory_operand(char * memory_instruction_in) // Should be a given that this is a memroy type
  {
    // Needs to check for an offset first
    struct memory_op_info info;
    init_op_info(&info);
    int length_counter = 0;
    int disp_value = 0;
-   int returned = check_for_offset(in->op1_mnemonic, &length_counter, &disp_value);
+   info.disp_length = check_for_offset(memory_instruction_in, &length_counter, &disp_value);
+   info.disp_offset = length_counter;
+   info.disp = disp_value;
+
    // Make a loop to look for the next thing other than a space
    length_counter++;
-   for (; in->op1_mnemonic[length_counter] == ' '; ++length_counter);
-   // Now the length counter should be at the right spot for the memory mnemonic
-   if (op1_mnemonic[length_counter] != '%') // Not a register
+   for (; memory_instruction_in[length_counter] == ' '; ++length_counter);
+   // Now the length counter should be at the right spot for the register mnemonic
+   if (memory_instruction_in[length_counter] != '%') // Not a register
      {
        fprintf(stderr, "Improper usage with the op1_mnemonic and memory");
        fprintf(stderr, "The op1_mnemonic needs a register after the parentheses");
@@ -377,28 +380,82 @@ struct memory_op_info check_memory_operand(struct instruction_pieces* in) // Sho
      }
 
    
-   if (returned == 0) // no offset
+   info.reg1_off = length_counter;
+   // Now need to look for the next non whitespace
+   for (; memory_instruction_in[length_counter] != ','; ++length_counter); // should be at the comma
+   for (; memory_instruction_in[length_counter] == ' '; ++length_counter); // should be at next non whitespace character
+
+   if (memory_instruction_in[length_counter] == ')') // we do not have more coming
      {
-       // This doesn't necessarily call the mod00 because it may need to call for sib, stay tuned
-       
-       
+       return info;
      }
 
-   else if (returned == 1)
+   else if (memory_instruction_in[length_counter] == ',')
      {
+       for (; memory_instruction_in[length_counter] == ' '; ++length_counter);
+       info.sib =  1;
+       if (memory_instruction_in[length_counter] == '%') // the next thing that comes is a reg
+	 {
+	   info.reg2_off = length_counter;
+	 }
+       else
+	 {
+	   fprintf(stderr, "The second operand of the sib was not a register, like it should be");
+	   assert(0 == 1);
+	 }
 
+        for (; memory_instruction_in[length_counter] != ','; ++length_counter); // should be at the comma
+	for (; memory_instruction_in[length_counter] == ' '; ++length_counter); // should be at next non whitespace character
+
+	info.sib_scale = memory_instruction_in[length_counter] - 48;
+
+	if (info.sib_scale != 1 && info.sib_scale != 2 && info.sib_scale != 4 && info.sib_scale != 8)
+	  {
+	    fprintf(stderr, "The scale for the sib is not 1,2,4, or 8");
+	    assert(1 == 0);
+	  }
+	
+	for (; memory_instruction_in[length_counter] == ' '; ++length_counter);
+
+	assert(memory_instruction_in[length_counter] == ')');
      }
 
-   else // the value of this should be 4
-     {
-
-     }
-   
+   return info;
  }
 
 
 
-void assert_dependencies(struct instruction_pieces *in); // TODO
+void assert_dependencies(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics)
+{
+  /* Now some requirements for instructions will be listed
+     - < 2 memory operands 
+     - No direction in ModRM, rather in the instruction 
+     - < 2 immediates
+     - If a dependency check fails for a mnemonic, try one of the nearest ones. Likely, lots of them will fail as of now
+   */
+
+  // Walk through this, 
+  int index = look_for_mnemonic(in->instruction_mnemonic, shorter_mnemonics,  longer_mnemonics);
+
+
+  if (index == -1)
+    {
+      printf("Mnemonic not found for the instruction");
+      assert(1 == 0);
+    }
+  // If the name_id comes out to 0 then we know that it was found in the longer ones, otherwsie it was found in the shorter ones
+  if (name_to_id(in->instruction_mnemonic))
+    {
+      // Found in the shorter ones, look at the dependencies for this one and its neighbors
+    }
+
+  else
+    {
+      // Found in the longer ones, look at the dependencies for this one and its neighbors
+    }
+  
+  
+}
 
 int write_modrm(struct instruction_pieces *in);
  
