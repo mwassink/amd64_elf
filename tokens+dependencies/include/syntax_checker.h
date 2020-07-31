@@ -20,6 +20,7 @@ struct instruction_pieces
   int op2_size;
   char * op2_mnemonic;
   int size;
+  bool wants_lock;
 };
 
 

@@ -55,7 +55,7 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
   char mnemonic[16] = {0};
   char op1_mnemonic[16] = {0};
   char op2_mnemonic[16] = {0};
-  if (input_string[0] != '\n') // This should be a label
+  if (input_string[0] != ' ') // This should be a label
     {
       for (; input_string[offset] != ' '; ++offset)\
 	{
@@ -68,6 +68,17 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
   // Regardless we can keep going until we find the mnemonic for the instruction
   // NOTE: that this will be put into the checker and search the array for the right insdtr
   // If the instr does not exist then this will die
+
+  // First check if this is asking for a lock. I think that is the only prefix we can have
+  // Slow but probably rare 
+  if (input_string[offset] == 'l' && input_string[offset + 1] == 'o' &&
+      input_string[offset + 2] == 'c' && input_string[offset] == 'k')
+  {
+      arguments->wants_lock = 1;
+  }
+
+
+
   for (int i = 0; input_string[offset] != ' '; ++offset, ++i)
     {
       mnemonic[i] = input_string[offset];
@@ -425,7 +436,7 @@ struct memory_op_info check_memory_operand(char * memory_instruction_in) // Shou
 
 
 
-void assert_dependencies(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics)
+void assert_dependencies(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep)
 {
   /* Now some requirements for instructions will be listed
      - < 2 memory operands 
@@ -443,15 +454,59 @@ void assert_dependencies(struct instruction_pieces *in, unsigned long int *short
       printf("Mnemonic not found for the instruction");
       assert(1 == 0);
     }
+  int name_id = name_to_id(in->instruction_mnemonic);
   // If the name_id comes out to 0 then we know that it was found in the longer ones, otherwsie it was found in the shorter ones
-  if (name_to_id(in->instruction_mnemonic))
+  if (name_id)
     {
+
       // Found in the shorter ones, look at the dependencies for this one and its neighbors
+      int valid_neighbors[16] = { 0 };
+      int valid_neighbors_number = 0;
+      // Check below
+      for (int i = 0; shorter_mnemonics[index - i] == name_id; ++i)
+      {
+          valid_neighbors[i] = index - i;
+          valid_neighbors_number++;
+      }
+      
+      for (int i = 0; shorter_mnemonics[index + i] == name_id; ++i)
+      {
+          valid_neighbors[i] = index + i;
+          valid_neighbors_number++;
+      }
+      
     }
 
   else
     {
       // Found in the longer ones, look at the dependencies for this one and its neighbors
+      int valid_neighbors[16] = { 0 };
+      int valid_neighbors_number = 0;
+      // Check below
+      for (int i = 0; longer_mnemonics[index - i] == name_id; ++i)
+      {
+          valid_neighbors[valid_neighbors_number++] = index - i;
+          
+      }
+      // Check above 
+      for (int i = 0; longer_mnemonics[index + i] == name_id; ++i)
+      {
+          valid_neighbors[valid_neighbors_number++] = index + i;
+      }
+      // Now to make a note about the direction and field bits
+      /* 
+      
+      
+      
+      
+      
+      
+      */
+
+
+
+
+
     }
   
   
