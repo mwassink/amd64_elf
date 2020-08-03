@@ -11,6 +11,8 @@ struct dependencies
   bool lockable; // Easy one to see. If there calls for a lock prefix, then look if a lock is allowed
   enum Basic_Operands one;
   enum Basic_Operands two;
+  enum Basic_Operands three;
+  enum Basic_Operands four;
   int highest_ring; // User space would be the highest, 3
   int max_size; 
 };

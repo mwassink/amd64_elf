@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include "dependencies.h"
 enum Sections {_text, _bss, data};
-enum Basic_Operands {immediate, memory, reg, sib};
+enum Basic_Operands {immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment}; // This is shared between the human instructions and the table
 
 
 struct instruction_pieces
@@ -53,9 +53,9 @@ void search_line(FILE * in, struct instruction_pieces *arguments);
 int binary_lookup(unsigned long int in, unsigned long int* array_in);
 int rip_suffix(char *instruction_mnemonic);
 struct memory_op_info check_memory_operand(char * memory_instruction_in);
-void assert_dependencies(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics);
+void check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep);
 int write_modrm(struct instruction_pieces *in);
-
+bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies *table_in);
 
 
 #endif

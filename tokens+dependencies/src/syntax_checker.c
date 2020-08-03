@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "../include/get_instructions.h"
@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "../include/sib.h"
 #include <math.h>
+#include "../include/dependencies.h"
 
 // This file needs to go through line by line and check for tokens. It will just look for whitespace and endlines
 
@@ -23,7 +24,60 @@ void init_op_info(struct memory_op_info *in)
   in->sib_scale = 0;
 }
 
+bool check_for_segment_register(char *reg)
+{
+  // Compilers like to use the stack registers
+  short int* ptr = (short int*)reg;
+  if (sizeof (*ptr) == 2)
+    {
+      // es cs ss ds fs gs 0x65 0x63 0x73 0x64 0x66 0x67
+      switch (*ptr)
+        {
+        case 0x6573:
+          return true;
+        case 0x6373:
+          return true;
+        case 0x7373:
+          return true;
+        case 0x6473:
+          return true;
+        case 0x6673:
+          return true;
+        case 0x6773:
+          return true;
+        default:
+          return false;
+        }
+    }
 
+  else
+    {
+      char arr[4];
+      arr[0] = reg[0]; arr[1] = reg[1];
+      arr[2] = 0; arr[3] = 0;
+      int *ptr = (int *)reg;
+      switch (*ptr)
+        {
+        case 0x65730000:
+          return true;
+        case 0x63730000:
+          return true;
+        case 0x73730000:
+          return true;
+        case 0x64730000:
+          return true;
+        case 0x66730000:
+          return true;
+        case 0x67730000:
+          return true;
+        default:
+          return false;
+        }
+
+
+    }
+
+}
 
   
 int ascii_to_int( char * in, int *returned_index)
@@ -53,11 +107,11 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
   line_length  = getline(&input_string, &line_length, in); // Should not be able to distinguish between these when called
   char label[100] = {0};
   char mnemonic[16] = {0};
-  char op1_mnemonic[16] = {0};
-  char op2_mnemonic[16] = {0};
+  char *op1_mnemonic = malloc (16);
+  char *op2_mnemonic = malloc(16);
   if (input_string[0] != ' ') // This should be a label
     {
-      for (; input_string[offset] != ' '; ++offset)\
+      for (; input_string[offset] != ' ' && input_string[offset] != '\n'; ++offset)\
 	{
 	  label[offset] = input_string[offset];
 	}
@@ -68,7 +122,10 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
   // Regardless we can keep going until we find the mnemonic for the instruction
   // NOTE: that this will be put into the checker and search the array for the right insdtr
   // If the instr does not exist then this will die
-
+  if (input_string[offset] == '\n')
+    {
+      return;
+    }
   // First check if this is asking for a lock. I think that is the only prefix we can have
   // Slow but probably rare 
   if (input_string[offset] == 'l' && input_string[offset + 1] == 'o' &&
@@ -87,9 +144,14 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
 
   for (; input_string[offset] == ' '; ++offset);
 
+  if (input_string[offset] == '\n')
+    {
+      return;
+    }
+
   // $ denotes immediate, number will denote offset, ( will denote a mem, % just reg
 
-  if (input_string[offset] == '(') // Thsi is a memory operand, probably does need some type of special loop until the next parentheses
+  else if (input_string[offset] == '(') // Thsi is a memory operand, probably does need some type of special loop until the next parentheses
     {
       arguments->op1 = memory;
       for (int i = 0; input_string[offset] != ')'; ++offset)
@@ -99,14 +161,32 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
     }
 
   else if (input_string[offset] == '%') // this is a register, does not need a special loop
-    {arguments->op1 = reg;
+    {
+      if (input_string[offset + 1] == 'x')
+        {
+          arguments->op1 = xmm;
+        }
+      else if (input_string[offset + 1] == 'm')
+        {
+          arguments->op1 = mm;
+        }
+      else if (input_string[offset + 1] == 's' && input_string[offset + 2] == 't')
+        {
+          // Stack register
+          arguments->op1 = stack_reg;
+        }
+      else if (check_for_segment_register(input_string + offset))
+        {
+        arguments->op1 = segment;
+        }
+
       for (int i = 0; input_string[offset] != ' '; ++offset)
 	{
 	  op1_mnemonic[i] = input_string[offset]; // wil point at right one later
 	}
     }
 
-  else if (input_string[offset] > 48 && input_string[offset]  < 58) // should be an integer or a 0 which would signify an offset
+  else if (input_string[offset] > 48 && input_string[offset]  < 58) // should be an integer or a 0 which would signify an offset. An immediate would have $
     {
       arguments->op1 = memory;
       for (int i = 0; input_string[offset] != ')'; ++offset)
@@ -132,7 +212,12 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
 
   for (; input_string[offset] == ' '; ++offset);
 
-  if (input_string[offset] != ',') // it should always be some type of comma to separate the operands
+  if (input_string[offset] == '\n')
+    {
+      return;
+    }
+
+  else if (input_string[offset] != ',') // it should always be some type of comma to separate the operands
     {
       fprintf(stderr, "Unrecognized arguments");
       assert(1 == 0);
@@ -142,7 +227,12 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
 
   for (; input_string[offset] == ' '; ++offset); // loop until the next argument
 
-  if (input_string[offset] == '(') // Thsi is a memory operand, probably does need some type of special loop until the next parentheses
+  if (input_string[offset] == '\n')
+    {
+      return;
+    }
+
+  else if (input_string[offset] == '(') // Thsi is a memory operand, probably does need some type of special loop until the next parentheses
     {
       arguments->op2 = memory;
       for (int i = 0; input_string[offset] != ')'; ++offset)
@@ -152,7 +242,25 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
     }
 
   else if (input_string[offset] == '%') // this is a register, does not need a special loop
-    {arguments->op2 = reg;
+    {
+      if (input_string[offset + 1] == 'x')
+        {
+          arguments->op2 = xmm;
+        }
+      else if (input_string[offset + 1] == 'm')
+        {
+          arguments->op2 = mm;
+        }
+      else if (input_string[offset + 1] == 's' && input_string[offset + 2] == 't')
+        {
+          // Stack register
+          arguments->op2 = stack_reg;
+        }
+      else if (check_for_segment_register(input_string + offset))
+        {
+        arguments->op2 = segment;
+        }
+
       for (int i = 0; input_string[offset] != ' '; ++offset)
 	{
 	  op2_mnemonic[i] = input_string[offset]; // wil point at right one later
@@ -179,7 +287,7 @@ void search_line(FILE * in, struct instruction_pieces *arguments)
       
     }
 
-  arguments->op2_mnemonic = op2_mnemonic;
+  arguments->op2_mnemonic = op2_mnemonic; // Need to free later
 
   // Now this function should be done 
 
@@ -335,7 +443,7 @@ static inline int check_for_offset(char * string, int *start_parentheses, int *d
 	  total |= temp;
 	  total <<= 4;
 	}
-
+      *disp_value = total;
       *start_parentheses = length_counter;
 
       if (length_counter - 2 > 8) // Too big
@@ -353,7 +461,8 @@ static inline int check_for_offset(char * string, int *start_parentheses, int *d
   else if  (string[0] >= 48 && string[0] < 58)
     {
       // This is just a decimal offset
-      if (ascii_to_int(string, start_parentheses)  > 255)
+      *disp_value = ascii_to_int(string, start_parentheses);
+      if (*disp_value> 255)
 	{
 	  return 1;
 	}
@@ -436,7 +545,7 @@ struct memory_op_info check_memory_operand(char * memory_instruction_in) // Shou
 
 
 
-void assert_dependencies(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep)
+void check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep)
 {
   /* Now some requirements for instructions will be listed
      - < 2 memory operands 
@@ -454,7 +563,7 @@ void assert_dependencies(struct instruction_pieces *in, unsigned long int *short
       printf("Mnemonic not found for the instruction");
       assert(1 == 0);
     }
-  int name_id = name_to_id(in->instruction_mnemonic);
+  unsigned long int name_id = name_to_id(in->instruction_mnemonic);
   // If the name_id comes out to 0 then we know that it was found in the longer ones, otherwsie it was found in the shorter ones
   if (name_id)
     {
@@ -495,15 +604,19 @@ void assert_dependencies(struct instruction_pieces *in, unsigned long int *short
       }
       // Now to make a note about the direction and field bits
       /* 
-      
-      
-      
-      
-      
-      
+         - The direction and field buts may not be there for all of them
+         - While many have d and w bits, others may have a different one in one of theirs
       */
 
+      // Calling the assert deps on all of these
+      // Declare a match variable on this to make sure that it works
 
+      bool match_found = 0;
+      for (int iterator = 0; iterator < valid_neighbors_number; ++iterator)
+        {
+          // NOT DONE YET
+          if ()
+        }
 
 
 
@@ -514,8 +627,41 @@ void assert_dependencies(struct instruction_pieces *in, unsigned long int *short
 
 int write_modrm(struct instruction_pieces *in);
  
+bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies *table_in)
+{
+  /*
+    - Pass the same enum operands
+    - Pass the lock check 
+    - Pass the size check 
+ 
+   */
+
+  if (user_in->wants_lock && !(table_in->lockable)) // Failure, return a zero
+    {
+      return 0;
+    }
+
+  if (user_in->op1 != table_in->one)
+    {
+      return 0;
+    }
+
+  if (user_in->op2 != table_in->two)
+    {
+      return 0;
+    }
+  
+  if (user_in->size > table_in->max_size)
+    {
+      return 0;
+    }
 
 
+
+  return 1;
+  
+  
+}
 
  
   
