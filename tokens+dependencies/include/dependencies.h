@@ -12,7 +12,7 @@ struct dependencies
   enum Basic_Operands one;
   enum Basic_Operands two;
   int highest_ring; // User space would be the highest, 3
-  int max_size; 
+  int max_size; // In BYTES
 };
   
 
