@@ -30,7 +30,7 @@ int main()
 	// First malloc 1074 struct pointers on the heap
 	struct instruction_format example;
 	struct instruction_format* array = (char *)malloc(1074 * sizeof(example)); //1074 structs on the heap
-	char* homes_for_strings = (char*)malloc(1074 * 208);
+	char* homes_for_strings = (char*)malloc(1074 * 208); // 1074 strings on the heap
 
 	FILE* char_strings = fopen("../misc/strings.bin", "wb");
 	if (!char_strings)

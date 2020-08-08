@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "dependencies.h"
 enum Sections {_text, _bss, data};
-enum Basic_Operands {immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment}; // This is shared between the human instructions and the table
+ // This is shared between the human instructions and the table
 
 
 struct instruction_pieces

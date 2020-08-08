@@ -12,7 +12,7 @@ struct instruction_definition
   char prefix; // Useful for writing this, whether it has a prerfix or not
   char opcode; // necessary for writing the opcode into the file
   char secondary_opcode; // Necessary if this is included
-
+  char prefix_OF; // Don't do a bool just the prefix
 
 
 };
