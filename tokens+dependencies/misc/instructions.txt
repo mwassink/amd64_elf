@@ -1063,7 +1063,7 @@ F2,0F,F0,,r,,,,,,LDDQU,xmm,m128,,,sse3,,,,,,Load Unaligned Integer 128 Bits
 ,0F,F9,,r,,,,,,PSUBW,mm,mm/m64,,,mmx,,,,,,Subtract Packed Integers
 66,0F,F9,,r,,,,,,PSUBW,xmm,xmm/m128,,,sse2,,,,,,Subtract Packed Integers
 ,0F,FA,,r,,,,,,PSUBD,mm,mm/m64,,,mmx,,,,,,Subtract Packed Integers
- 66,0F,FA,,r,,,,,,PSUBD,xmm,xmm/m128,,,sse2,,,,,,Subtract Packed Integers
+66,0F,FA,,r,,,,,,PSUBD,xmm,xmm/m128,,,sse2,,,,,,Subtract Packed Integers
 ,0F,FB,,r,,,,,,PSUBQ,mm,mm/m64,,,sse2,,,,,,Subtract Packed Quadword Integers
 66,0F,FB,,r,,,,,,PSUBQ,xmm,xmm/m128,,,sse2,,,,,,Subtract Packed Quadword Integers
 ,0F,FC,,r,,,,,,PADDB,mm,mm/m64,,,mmx,,,,,,Add Packed Integers

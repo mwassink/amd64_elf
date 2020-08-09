@@ -64,6 +64,7 @@ unsigned char byte_hexstring_to_int(char * input)
 {
     unsigned short int offset = 0;
     unsigned char total = 0;
+    int debug_flag = 0;
 get_value:
     switch (*input)
         {
@@ -116,7 +117,8 @@ get_value:
             total += 15;
             break;
         default:
-            printf("Not a valid value, returning -1");
+            printf("Error in function byte_hexstring_to_int converting ascii\n");
+            ++debug_flag;
             return -1;
         }
     input++;
@@ -133,11 +135,11 @@ get_value:
 
 
 
-void gather_instruction(struct instruction_format *instr, FILE * read_pointer);
 
 
 
-void gather_instruction(struct instruction_format *instr, FILE * fileptr)
+
+void gather_instruction(struct instruction_format *instr, FILE * fileptr, int * catches)
 {
     // parse the small flags first
     if (instr->pooled != -1)
@@ -148,18 +150,32 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
 
     char temp[17];
 
+    char full_instruction[255] = { 0 };
     
-    
-
+    int full_instruction_counter = 0;
+    char out;
 
     for (; counter < 10; )
         {
-            char out = fgetc(fileptr);
+        
+            out = fgetc(fileptr);
+            if (out == '\n')
+            {
+                printf("big problem");
+		(*catches) = *catches + 1;
+            }
+            full_instruction[full_instruction_counter++] = out;
             if (out == ',')
                 {
                     counter += 1;
                     offset = 0;
                     continue;
+                handle_po_plus:
+                    out = fgetc(fileptr);
+                    out = fgetc(fileptr);
+                    counter += 1;
+                    continue;
+
                 }
             switch (counter)
                 {
@@ -183,6 +199,10 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
                 case 2:
                     if (offset == 0)
                         {
+                        if (out == '+')
+                        {
+                            goto handle_po_plus;
+                        }
                           temp[0] = out;
                           offset++;
                         }
@@ -190,7 +210,9 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
                         {
                           temp[1] = out;
                           offset = 0;
+                          
                           instr->primary_opcode = byte_hexstring_to_int(temp);
+                          
                         }
                       break;
                 case 3:
@@ -210,7 +232,7 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
                     instr->reg_opcode_field = out;
                     break;
                 case 5:
-                    printf("There are no codes introduced with the processor for this one");
+                    //printf("There are no codes introduced with the processor for this one");
                     break;
                 case 6:
                     instr->documentation = out;
@@ -232,7 +254,12 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
             {
             
             char out = fgetc(fileptr);
-
+            if (out == '\n')
+            {
+                printf("big problem");
+                (*catches) = *catches + 1;
+            }
+            full_instruction[full_instruction_counter++] = out;
                 if (out == ',')
                     {
                         if (current)
@@ -312,11 +339,12 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr)
             else
               instr->ID = 0;
 
-            char out = 0;
+            
             while (out != '\n')
             {
                 out = fgetc(fileptr);
             }
+            *catches = *catches + 1;
 
 }
 
@@ -482,7 +510,7 @@ void pull_instructions_and_rewrite()
     {
       struct instruction_format *current_ptr = instructions+i; // change this later
       pool_memory(current_ptr, memory_pool+176*i);
-      gather_instruction(current_ptr, fptr);
+      gather_instruction(current_ptr, fptr, NULL);
       write_instruction_stdout(current_ptr);
     }
 

@@ -42,7 +42,7 @@ struct ID_instr_pair
 int string_restrict(char * input);
 void pool_memory(struct instruction_format *instr_ptr, char * char_pool_begin);
 unsigned char byte_hexstring_to_int(char * input);
-void gather_instruction(struct instruction_format *instr, FILE * read_pointer);
+void gather_instruction(struct instruction_format *instr, FILE * read_pointer, int *catches);
 void write_instruction_stdout(struct instruction_format *instr);
 void example_print_value_binary();
 void print_binary(unsigned long int input_number);

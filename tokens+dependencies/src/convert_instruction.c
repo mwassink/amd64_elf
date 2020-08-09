@@ -7,11 +7,14 @@
 // The goal of this file is to provide a function to convert from the tabled to the necessary form
 // It will provide functions to do this
 
+int missed_instructions_counter = 0;
+int instructions_counted = 0;
 
 void fill_in_ops(struct instruction_format *format, struct dependencies *dep)
 {
   // Look for immediates, xmm, mm, registers, and memory
 
+  
   if (format->op1[0] == 'r' && format->op1[1] == '8') //r8
     {
       dep->max_size = 1;
@@ -69,7 +72,8 @@ void fill_in_ops(struct instruction_format *format, struct dependencies *dep)
   else
     {
       dep->max_size = 0;
-      printf("Failure looking through the instructions given from the file");
+      printf("%d op1: %s not found", instructions_counted, format->op1);
+     
     }
 
 
@@ -131,7 +135,7 @@ void fill_in_ops(struct instruction_format *format, struct dependencies *dep)
   else
     {
       dep->max_size = 0;
-      printf("Failure looking through the instructions given from the file");
+      printf("%d op1: %s not found", instructions_counted, format->op2);
     }
 
 
@@ -172,6 +176,7 @@ void write_new_definitions(struct instruction_definition *definitions, int num_f
   if (!fp)
     {
       fprintf(stderr, "Failed to open a memory-mapped file handle for writing");
+      return;
     }
 
 
@@ -207,7 +212,7 @@ void write_new_definitions(struct instruction_definition *definitions, int num_f
 void friendly_output(struct instruction_definition *definitions, int num_formats, struct instruction_format* format)
 {
   struct instruction_definition temp;
-
+  
   for (int i = 0; i < num_formats; ++i)
     {
       convert_instruction(&temp, format + i);
@@ -255,11 +260,12 @@ int main()
 		  return -1;
 	  }
     }
-  
+  int catches = 0; 
   for (int i = 0; i < 1074; ++i)
     {
+      instructions_counted++;
       pool_memory(array_of_initial_instructions + i, homes_for_strings + (208*i)); // The offset for strings should be 208
-      gather_instruction(array_of_initial_instructions + i, instruction_handle_in);
+      gather_instruction(array_of_initial_instructions + i, instruction_handle_in, &catches);
       array_of_initial_instructions[i].ID = name_to_id(array_of_initial_instructions[i].mnemonic);
     }
 
