@@ -229,7 +229,7 @@ void gather_instruction(struct instruction_format *instr, FILE * fileptr, int * 
                         }
                     break;
                 case 4:
-                    instr->reg_opcode_field = out;
+                    instr->reg_opcode_field = atoi(out);
                     break;
                 case 5:
                     //printf("There are no codes introduced with the processor for this one");
