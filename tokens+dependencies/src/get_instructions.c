@@ -52,7 +52,7 @@ void pool_memory(struct instruction_format *instr_ptr, char * char_pool_begin)
     instr_ptr->pooled = -1;
     instr_ptr->fields = char_pool_begin + 192;
     
-    memset(instr_ptr->mnemonic, 0, 208);
+    memset(instr_ptr->mnemonic - 16, 0, 208);
     
      // so that the pointer does not get lost and leaked
 }  

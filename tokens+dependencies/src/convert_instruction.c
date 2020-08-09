@@ -2,6 +2,7 @@
 #include "../include/get_text_tokens.h"
 #include "../include/get_instructions.h"
 #include "../include/instruction_definition.h"
+#include "stdlib.h"
 
 // The goal of this file is to provide a function to convert from the tabled to the necessary form
 // It will provide functions to do this
@@ -224,7 +225,7 @@ void friendly_output(struct instruction_definition *definitions, int num_formats
 	}
       printf("\n");
     }
-
+  
 }
 
 int main()
@@ -232,7 +233,17 @@ int main()
   // FIrst manage the memory
   struct instruction_format example_for_size;
   struct instruction_format *array_of_initial_instructions = (struct instruction_format*)malloc(1074 *sizeof(example_for_size));
+  if (array_of_initial_instructions == 0)
+  {
+      printf("Not enough space on the heap");
+      return -1;
+  }
   char *homes_for_strings = (char *)malloc(1074 * 208);
+  if (!homes_for_strings)
+  {
+      printf("Not enough space on the heap");
+      return -1;
+  }
 
   FILE * instruction_handle_in = fopen("../misc/instructions.txt", "r");
   if (!instruction_handle_in)
