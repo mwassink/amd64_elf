@@ -1,7 +1,8 @@
 #ifndef DEPENDENCIES_H
 #define DEPENDENCIES_H
 #include <stdbool.h>
-enum Basic_Operands {immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment};
+enum Basic_Operands {immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment, implied_reg,
+		     flag, empty, rflags, memory_offset, relative_offset};
 
 // These are necessary for the instruction, given the mnemonic or the ID
 struct dependencies

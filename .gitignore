@@ -20,3 +20,5 @@ tokens+dependencies/objects*
 .ccls-cache
 .ccls-cache/
 .ccls-cache*
+*.vs
+*.vs/

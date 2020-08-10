@@ -2,7 +2,8 @@
 #include "../include/get_text_tokens.h"
 #include "../include/get_instructions.h"
 #include "../include/instruction_definition.h"
-#include "stdlib.h"
+#include <stdlib.h>
+#include <stdbool.k>
 
 // The goal of this file is to provide a function to convert from the tabled to the necessary form
 // It will provide functions to do this
@@ -10,137 +11,343 @@
 int missed_instructions_counter = 0;
 int instructions_counted = 0;
 
-void fill_in_ops(struct instruction_format *format, struct dependencies *dep)
+char *slow_getline(FILE * file_in)
 {
-  // Look for immediates, xmm, mm, registers, and memory
+  char * line = malloc(400);
+  if (!line)
+    {
+      printf("malloc did not give enough space for 400 bytes of memory" );
+    }
+  int iterator = 0;
+  for (char in; in != \n; in = fgetc(file_in) )
+    {
+      line[iterator] == in;
+    }
 
   
-  if (format->op1[0] == 'r' && format->op1[1] == '8') //r8
-    {
-      dep->max_size = 1;
-      dep->one = reg;
-    }
-  else if (format->op1[0] == 'r' && format->op1[1] == '/' && format->op1[2] == 'm' && format->op1[3] == '8') //r/m8
-    {
-      dep->max_size = 1;
-      dep->one = mem_or_reg;
-    }
+}
 
-  else if (format->op1[0] == 'r' && format->op1[1] == '1' && format->op1[2] == '6' && format->op1[3] == '/')
+bool compare_strings(char * lhs, char * rhs)
+{
+  int max_length = 20;
+  bool equal = 1;
+  int iterator = 0;
+  for (; iterator <= max_length; ++iterator)
     {
-      dep->max_size = 8;
-      dep->one = reg;
-    }
-
-
-  else if (format->op1[0] == 'r' && format->op1[1] == '/' && format->op1[2] == 'm' && format->op1[3] == '1') //  r/m16+
-    {
-      dep->max_size = 8;
-      dep->one = mem_or_reg;
+      if (lhs[iterator] != rhs[iterator])
+	{
+	  return false;
+	}
+      if (lhs[iterator] == 0 && rhs[iterator] == 0)
+	{
+	  return true;
+	}
+	    
     }
 
-  else if (format->op1[0] == 'i' && format->op1[1] == 'm' && format->op1[2] == 'm' && format->op1[3] == '8')
+  if (iterator == 21)
     {
-      dep->max_size = 1;
-      dep->one = immediate;
+      return false;
     }
-
-  else if (format->op1[0] == 'i' && format->op1[1] == 'm' && format->op1[2] == 'm' && format->op1[3] == '1')
-    {
-      dep->max_size = 8;
-      dep->one = immediate;
-    }
-
-  else if (format->op1[0] == 'x' && format->op1[1] == 'm'  && format->op1[2] == 'm')
-    {
-      dep->max_size = 16; // Not sure of the significance of this size yet
-      dep->one = xmm;
-    }
-
-  else if (format->op1[0] == 'm'  && format->op1[1] == 'm')
-    {
-      dep->max_size = 8; //
-      dep->one = xmm;
-    }
-
-  else if (format->op1[0] == 's' && format->op1[1] == 't')
-    {
-      dep->max_size = 8; // No idea how big this register is
-      dep->one = stack_reg;
-    }
-
-  else
-    {
-      dep->max_size = 0;
-      printf("%d op1: %s not found", instructions_counted, format->op1);
-     
-    }
-
-
-
-  if (format->op2[0] == 'r' && format->op2[1] == '8') //r8
-    {
-      dep->max_size = 1;
-      dep->one = reg;
-    }
-  else if (format->op2[0] == 'r' && format->op2[1] == '/' && format->op2[2] == 'm' && format->op2[3] == '8') //r/m8
-    {
-      dep->max_size = 1;
-      dep->one = mem_or_reg;
-    }
-
-  else if (format->op2[0] == 'r' && format->op2[1] == '1' && format->op2[2] == '6' && format->op2[3] == '/')
-    {
-      dep->max_size = 8;
-      dep->one = reg;
-    }
-
-
-  else if (format->op2[0] == 'r' && format->op2[1] == '/' && format->op2[2] == 'm' && format->op2[3] == '1') //  r/m16+
-    {
-      dep->max_size = 8;
-      dep->one = mem_or_reg;
-    }
-
-   else if (format->op2[0] == 'i' && format->op2[1] == 'm' && format->op2[2] == 'm' && format->op2[3] == '8')
-    {
-      dep->max_size = 1;
-      dep->one = immediate;
-    }
-
-  else if (format->op2[0] == 'i' && format->op2[1] == 'm' && format->op2[2] == 'm' && format->op2[3] == '1')
-    {
-      dep->max_size = 8;
-      dep->one = immediate;
-    }
-
-  else if (format->op2[0] == 'x' && format->op2[1] == 'm'  && format->op2[2] == 'm')
-    {
-      dep->max_size = 16; // Not sure of the significance of this size yet
-      dep->one = xmm;
-    }
-
-  else if (format->op2[0] == 'm'  && format->op2[1] == 'm')
-    {
-      dep->max_size = 8; //
-      dep->one = xmm;
-    }
-
-  else if (format->op2[0] == 's' && format->op2[1] == 't')
-    {
-      dep->max_size = 8; // No idea how big this register is
-      dep->one = stack_reg;
-    }
-
-  else
-    {
-      dep->max_size = 0;
-      printf("%d op1: %s not found", instructions_counted, format->op2);
-    }
+  
+  return true;
+    
 
 
   
 }
+
+
+void fill_dependencies ( struct instruction_format *instr_format, struct dependencies * deps)
+{
+  // Start comparing the strings with the above function
+  if (compare_strings(instr_format->op1, "imm8"))
+    {
+      deps->max_size = 1;
+      deps->one = immediate;
+    }
+
+  else if (compare_strings(instr_format->op1, "imm16/32"))
+    {
+      deps->max_size = 4;
+      deps->one = immediate;
+    }
+
+   else if (compare_strings(instr_format->op1, "imm16/32/64"))
+    {
+      deps->max_size = 8; 
+      deps->one = immediate;
+    }
+
+
+   else if (compare_strings(instr_format->op1, "r8"))
+    {
+      deps->max_size = 1;
+      deps->one = reg;
+    }
+
+
+   else if (compare_strings(instr_format->op1, "r16/32/64"))
+    {
+      deps->max_size = 8;
+      deps->one = reg;
+    }
+
+
+   else if (compare_strings(instr_format->op1, "r/m8"))
+    {
+      deps->max_size = 1
+      deps->one = mem_or_reg;
+    }
+
+   else if (compare_strings(instr_format->op1, "r/m16/32/64"))
+    {
+      deps->max_size = 8;
+      deps->one = immediate;
+    }
+
+
+   else if (compare_strings(instr_format->op1, "m8"))
+    {
+      deps->max_size = 1;
+      deps->one = memory;
+    }
+
+   else if (compare_strings(instr_format->op1, "m16"))
+    {
+      deps->max_size = 2;
+      deps->one = memory;
+    }
+
+
+   else if (compare_strings(instr_format->op1, "m16/32"))
+    {
+      deps->max_size = 4;
+      deps->one = memory;
+    }
+
+   else if (compare_strings(instr_format->op1, "m32"))
+     {
+       deps->max_size = 4;
+       deps->op1 = memory
+     }
+
+   else if (compare_strings(instr_format->op1, "m64"))
+     {
+       deps->max_size = 8;
+       deps->op1 = memory;
+     }
+
+   else if (compare_strings(instr_format->op1, "m16/32/64"))
+     {
+       deps->max_size = 8;
+       deps->op1 = memory;
+     }
+   else if (compare_strings(instr_format->op1, "re18"))
+     {
+       deps->max_size = 0; // This is a flag
+       deps->op1 = flag;
+     }
+  
+   else if (compare_strings(instr_format->op1, "Flags"))
+     {
+       deps->max_size = 0;
+       deps->op1 = rflags;
+       
+     }
+
+   else if (compare_strings(instr_format->op1, "moffs8"))
+     {
+       deps->max_size = 1;
+       deps->op1 = memory_offset;
+     }
+
+   else if (compare_strings(instr_format->op1, "moffs16"))
+     {
+       deps->max_size = 2;
+       deps->op1 = memory_offset;
+     }
+
+   else if (compare_strings(instr_format->op1, "ST"))
+     {
+       deps->max_size = 8;
+       deps->op1 = stack_reg;
+     }
+
+   else if (compare_strings(instr_format->op1, "STi"))
+     {
+       deps->max_size = 8;
+       deps->op1 = stack_reg;
+     }
+
+   else if (compare_strings(instr_format->op1, "xmm"))
+     {
+       deps->max_size = 16;
+       deps->op1 = xmm;
+     }
+
+   else if (compare_strings(instr_format->op1, "mm"))
+     {
+       deps->max_size = 16;
+       deps->op1 = mm;
+     }
+   else if (compare_strings(instr_format->op1, "rel8"))
+     {
+       deps->max_size = 1;
+       deps-op1 = relative_offset;
+     }
+
+   else if (compare_strings(instr_format->op1, "rel16/32"))
+     {
+       deps->max_size = 4;
+       deps->op1 = relative_offset;
+     }
+  
+  if (compare_strings(instr_format->op2, "imm8"))
+    {
+      deps->max_size = 1;
+      deps->two = immediate;
+    }
+
+  else if (compare_strings(instr_format->op2, "imm16/32"))
+    {
+      deps->max_size = 4;
+      deps->two = immediate;
+    }
+
+   else if (compare_strings(instr_format->op2, "imm16/32/64"))
+    {
+      deps->max_size = 8; 
+      deps->two = immediate;
+    }
+
+
+   else if (compare_strings(instr_format->op2, "r8"))
+    {
+      deps->max_size = 1;
+      deps->two = reg;
+    }
+
+
+   else if (compare_strings(instr_format->op2, "r16/32/64"))
+    {
+      deps->max_size = 8;
+      deps->two = reg;
+    }
+
+
+   else if (compare_strings(instr_format->op2, "r/m8"))
+    {
+      deps->max_size = 1
+      deps->two = mem_or_reg;
+    }
+
+   else if (compare_strings(instr_format->op2, "r/m16/32/64"))
+    {
+      deps->max_size = 8;
+      deps->two = immediate;
+    }
+
+
+   else if (compare_strings(instr_format->op2, "m8"))
+    {
+      deps->max_size = 1;
+      deps->two = memory;
+    }
+
+   else if (compare_strings(instr_format->op2, "m16"))
+    {
+      deps->max_size = 2;
+      deps->two = memory;
+    }
+
+
+   else if (compare_strings(instr_format->op2, "m16/32"))
+    {
+      deps->max_size = 4;
+      deps->two = memory;
+    }
+
+   else if (compare_strings(instr_format->op2, "m32"))
+     {
+       deps->max_size = 4;
+       deps->op2 = memory
+     }
+
+   else if (compare_strings(instr_format->op2, "m64"))
+     {
+       deps->max_size = 8;
+       deps->op2 = memory;
+     }
+
+   else if (compare_strings(instr_format->op2, "m16/32/64"))
+     {
+       deps->max_size = 8;
+       deps->op2 = memory;
+     }
+   else if (compare_strings(instr_format->op2, "re18"))
+     {
+       deps->max_size = 0; // This is a flag
+       deps->op2 = flag;
+     }
+  
+   else if (compare_strings(instr_format->op2, "Flags"))
+     {
+       deps->max_size = 0;
+       deps->op2 = rflags;
+       
+     }
+
+   else if (compare_strings(instr_format->op2, "moffs8"))
+     {
+       deps->max_size = 1;
+       deps->op2 = memory_offset;
+     }
+
+   else if (compare_strings(instr_format->op2, "moffs16"))
+     {
+       deps->max_size = 2;
+       deps->op2 = memory_offset;
+     }
+
+   else if (compare_strings(instr_format->op2, "ST"))
+     {
+       deps->max_size = 8;
+       deps->op2 = stack_reg;
+     }
+
+   else if (compare_strings(instr_format->op2, "STi"))
+     {
+       deps->max_size = 8;
+       deps->op2 = stack_reg;
+     }
+
+   else if (compare_strings(instr_format->op2, "xmm"))
+     {
+       deps->max_size = 16;
+       deps->op2 = xmm;
+     }
+
+   else if (compare_strings(instr_format->op2, "mm"))
+     {
+       deps->max_size = 16;
+       deps->op2 = mm;
+     }
+   else if (compare_strings(instr_format->op2, "rel8"))
+     {
+       deps->max_size = 1;
+       deps-op2 = relative_offset;
+     }
+
+   else if (compare_strings(instr_format->op2, "rel16/32"))
+     {
+       deps->max_size = 4;
+       deps->op2 = relative_offset;
+     }
+
+
+}
+
 
 
 
@@ -274,7 +481,7 @@ int main()
   
   write_new_definitions(definitions_for_new_file, 1074, array_of_initial_instructions);
   
-  friendly_output(definitions_for_new_file, 1074 , array_of_initial_instructions);
+  //friendly_output(definitions_for_new_file, 1074 , array_of_initial_instructions);
   
   free(homes_for_strings);
   free(array_of_initial_instructions);
