@@ -279,6 +279,7 @@ int main()
   free(homes_for_strings);
   free(array_of_initial_instructions);
   free(definitions_for_new_file);
+  
 
 
   
