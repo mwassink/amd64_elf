@@ -29,3 +29,5 @@ write_instructions: write_instructions.o get_instructions.o get_text_tokens.o
 convert_instructions: convert_instruction.o get_text_tokens.o get_instructions.o
 	@echo "Linking Objects..."
 	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@ 
+function_tests: function_tests.o convert_instruction.o get_text_tokens.o get_instructions.o
+	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
