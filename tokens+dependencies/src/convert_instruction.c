@@ -105,7 +105,7 @@ void fill_dependencies ( struct instruction_format *instr_format, struct depende
    else if (compare_strings(instr_format->op1, "r/m16/32/64"))
     {
       deps->max_size = 8;
-      deps->one = immediate;
+      deps->one = mem_or_reg;
     }
 
    else if (compare_strings(instr_format->op1, "r/m16/32"))
@@ -322,7 +322,7 @@ void fill_dependencies ( struct instruction_format *instr_format, struct depende
    else if (compare_strings(instr_format->op2, "r/m16/32/64"))
     {
       deps->max_size = 8;
-      deps->two = immediate;
+      deps->two = mem_or_reg;
     }
 
 
@@ -467,18 +467,18 @@ void fill_dependencies ( struct instruction_format *instr_format, struct depende
    else if (compare_strings(instr_format->op2, "xmm/m128"))
     {
       deps->max_size = 16;
-      deps->one = xmm_or_mem;
+      deps->two = xmm_or_mem;
     }
 
   else if (compare_strings(instr_format->op2, "xmm/m64"))
     {
       deps->max_size = 8;
-      deps->one = xmm_or_mem;
+      deps->two = xmm_or_mem;
     }
   else if (compare_strings(instr_format->op2, "xmm/m32"))
     {
       deps->max_size = 4;
-      deps->one = xmm_or_mem;
+      deps->two = xmm_or_mem;
     }
 	    
    else
@@ -508,6 +508,8 @@ void convert_instruction(struct instruction_definition *definition, struct instr
 
   fill_dependencies(format, &definition->requirements);
   definition->prefix = format->prefix;
+  definition->requirements.highest_ring = format->ring_level;
+  definition->prefix_OF = format->prefix_OF;
   
 
   
@@ -581,6 +583,7 @@ void friendly_output(struct instruction_definition *definitions, int num_formats
   
 }
 
+/*
 int main()
 {
   // FIrst manage the memory
@@ -632,6 +635,6 @@ int main()
 
   
 }
-
+*/
 
 

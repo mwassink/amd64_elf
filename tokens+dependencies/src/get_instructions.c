@@ -34,7 +34,7 @@ void pool_memory(struct instruction_format *instr_ptr, char * char_pool_begin)
     instr_ptr->reg_opcode_field = 0;
     instr_ptr->documentation = 0;
     instr_ptr->mode = 0;
-    instr_ptr->ring_level = -1; //potentially confusing
+    instr_ptr->ring_level = 3; // let it be used by all by default
     instr_ptr->lock_prefix = 0;
     instr_ptr->mnemonic = char_pool_begin + 16;
     instr_ptr->op1 = char_pool_begin + 32;
@@ -421,19 +421,16 @@ void print_binary(unsigned long int input_number)
 long unsigned int  name_to_id( char * mnemonic)
 {
   // Assumes tghat the mnemonic is null terminated and that it is no bigger than 8 bytes
-  int i = 0;
-  long unsigned int return_value = 0;
-  int offset = 56;
+  int length = 0;
+  for (; mnemonic[length] != 0 && length <= 16; ++length);
 
-  while(mnemonic[i] != 0 && offset != 0)
-    {
-      long unsigned int temp = mnemonic[i];
-      return_value |= (temp<<offset);
-      ++i;
-      offset -= 8;
-    }
-
-  return return_value;
+  if (length > 8)
+	  return 0;
+  else
+  	  {
+	  	  long unsigned int *ptr = (long unsigned int *)(mnemonic);
+	  	  return *ptr;
+  	  }
 }
 
 void bubble_sort_instructions(struct ID_instr_pair * pair_array, int size)

@@ -36,3 +36,8 @@ convert_instructions: convert_instruction.o get_text_tokens.o get_instructions.o
 function_tests: function_tests.o convert_instruction.o get_text_tokens.o get_instructions.o
 	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
 	$(RM) $^
+
+test_convert_instructions: test_convert_instructions.o convert_instruction.o get_text_tokens.o get_instructions.o
+	@echo "Linking Objects"
+	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
+	$(RM) $^
