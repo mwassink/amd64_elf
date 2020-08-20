@@ -1,11 +1,12 @@
 #ifndef CONVERT_INSTRUCTION_H
 #define  CONVERT_INSTRUCTION_H
 #include <stdbool.h>
-#include "dependencies.h"
 #include "get_instructions.h"
 #include "get_text_tokens.h"
 #include "instruction_definition.h"
 #include "stdlib.h"
+#include "customtypes.h"
+#include "utilities.h"
 
 char *slow_getline(FILE * file_in);
 bool compare_strings(char * lhs, char * rhs);

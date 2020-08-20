@@ -1,7 +1,6 @@
-#include "../include/dependencies.h"
-#include "../include/get_text_tokens.h"
 #include "../include/get_instructions.h"
-#include "../include/instruction_definition.h"
+#include "../include/utilities.h"
+
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -12,51 +11,9 @@ int missed_instructions_counter = 0;
 int instructions_counted = 0;
 int dependencies_filled = 0;
 
-char *slow_getline(FILE * file_in)
-{
-  char * line = malloc(400);
-  if (!line)
-    {
-      printf("malloc did not give enough space for 400 bytes of memory" );
-    }
-  int iterator = 0;
-  for (char in; in != '\n'; in = fgetc(file_in) )
-    {
-      line[iterator] = in;
-    }
-
-  return line;
-  
-}
-
-bool compare_strings(char * lhs, char * rhs)
-{
-  int max_length = 20;
-  int iterator = 0;
-  for (; iterator <= max_length; ++iterator)
-    {
-      if (lhs[iterator] != rhs[iterator])
-	{
-	  return false;
-	}
-      if (lhs[iterator] == 0 && rhs[iterator] == 0)
-	{
-	  return true;
-	}
-	    
-    }
-
-  if (iterator == 21)
-    {
-      return false;
-    }
-  
-  return true;
-    
 
 
-  
-}
+
 
 
 void fill_dependencies ( struct instruction_format *instr_format, struct dependencies * deps)
@@ -583,7 +540,7 @@ void friendly_output(struct instruction_definition *definitions, int num_formats
   
 }
 
-/*
+
 int main()
 {
   // FIrst manage the memory
@@ -635,6 +592,6 @@ int main()
 
   
 }
-*/
+
 
 

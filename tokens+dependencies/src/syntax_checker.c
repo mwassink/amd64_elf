@@ -1,18 +1,60 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../include/get_instructions.h"
-#include "../include/syntax_checker.h"
 #include <stdbool.h>
 #include "../include/sib.h"
 #include <math.h>
-#include "../include/dependencies.h"
-
+#include "../include/customtypes.h"
+#include "../include/get_instructions.h"
+#include "../include/syntax_checker.h"
 // This file needs to go through line by line and check for tokens. It will just look for whitespace and endlines
-
-
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
+
+void fill_string_with_line(int max_size, char * string, FILE *fptr)
+{
+  char in = 0;
+  for (int iterator = 0; in != '\n'; ++iterator)
+    {
+      in = fgetc(fptr);
+      string[iterator] = in;
+    }
+   
+}
+
+int move_to_endline(const char * input_string, int start_iterator)
+{
+  for (; input_string[start_iterator] != '\n'; ++start_iterator);
+  return start_iterator;
+}
+
+int move_to_space (const char * input_string, int start_iterator)
+{
+  for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != '\n'; ++start_iterator);
+
+  if (input_string[start_iterator] == '\n')
+    {
+      fprintf(stderr, "Issue reading the input string. An endline was reached prematurely");
+      assert(0 == 1);
+    }
+  else
+    {
+      return start_iterator;
+    }
+}
+
+int check_for_section_label(const char * input_string)
+{
+  int start_iterator = 0;
+  for (; input_string[start_iterator] == ' ' || input_string[start_iterator] == 9);
+
+  if (input_string[start_iterator] != '.')
+    {
+      return -1;
+    }
+  
+}
+
 
 void init_op_info(struct memory_op_info *in)
 {
@@ -623,10 +665,7 @@ void check_instruction(struct instruction_pieces *in, unsigned long int *shorter
     }
   
   
-}
-
-int write_modrm(struct instruction_pieces *in);
- 
+} 
 bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies *table_in)
 {
   /*
@@ -635,7 +674,6 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     - Pass the size check 
  
    */
-
   if (user_in->wants_lock && !(table_in->lockable)) // Failure, return a zero
     {
       return 0;
@@ -655,12 +693,7 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     {
       return 0;
     }
-
-
-
   return 1;
-  
-  
 }
 
  

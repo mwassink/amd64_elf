@@ -4,35 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "dependencies.h"
+#include "customtypes.h"
 enum Sections {_text, _bss, data};
  // This is shared between the human instructions and the table
 
 
-struct instruction_pieces
-{
-  char * instruction_mnemonic;
-  long unsigned int instruction; // This will match the table which allows for a quick search
-  enum Basic_Operands op1;
-  int op1_size;
-  char * op1_mnemonic;
-  enum Basic_Operands op2;
-  int op2_size;
-  char * op2_mnemonic;
-  int size;
-  bool wants_lock;
-};
-
-
-struct memory_op_info
-{
-  int disp_offset;
-  int disp_length;
-  int disp;
-  int sib_scale; // -1 if not available
-  int reg1_off, reg2_off; // -1 if the register does not exist
-  bool sib; // Good easy way to check for the sib byte 
-};
 
 /* struct sib
 {

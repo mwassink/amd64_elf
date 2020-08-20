@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "../include/modrm.h"
-#include "../include/char_to_instructions.h"
 #include "../include/get_instructions.h"
-#include "../include/get_text_tokens.h"
 #include <string.h>
 #include <assert.h>
 
