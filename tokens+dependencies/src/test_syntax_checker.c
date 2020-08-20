@@ -6,11 +6,12 @@
 
 
 
-void test_read_line(char * filein)
+void test_read_line_1()
 {
 
-  FILE * fileptr = fopen(filein, "r");
+  FILE * fileptr = fopen("test1.s", "r");
   struct dependencies tested_struct;
+  
   
 
 
