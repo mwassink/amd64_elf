@@ -11,214 +11,208 @@ int missed_instructions_counter = 0;
 int instructions_counted = 0;
 int dependencies_filled = 0;
 
-
-
-
-
-
 void fill_dependencies ( struct instruction_format *instr_format, struct dependencies * deps)
 {
+  // May need to be changed if it does not work 
   // Start comparing the strings with the above function
   dependencies_filled++;
   if (compare_strings(instr_format->op1, "imm8"))
     {
-      deps->max_size = 1;
       deps->one = immediate;
     }
 
   else if (compare_strings(instr_format->op1, "imm16/32"))
     {
-      deps->max_size = 4;
       deps->one = immediate;
     }
 
    else if (compare_strings(instr_format->op1, "imm16/32/64"))
     {
-      deps->max_size = 8; 
+
       deps->one = immediate;
     }
 
 
    else if (compare_strings(instr_format->op1, "r8"))
     {
-      deps->max_size = 1;
+
       deps->one = reg;
     }
 
 
    else if (compare_strings(instr_format->op1, "r16/32/64"))
     {
-      deps->max_size = 8;
+
       deps->one = reg;
     }
 
 
    else if (compare_strings(instr_format->op1, "r/m8"))
     {
-      deps->max_size = 1;
+
       deps->one = mem_or_reg;
     }
 
    else if (compare_strings(instr_format->op1, "r/m16/32/64"))
     {
-      deps->max_size = 8;
+
       deps->one = mem_or_reg;
     }
 
    else if (compare_strings(instr_format->op1, "r/m16/32"))
      {
-       deps->max_size = 4;
+
        deps->one = mem_or_reg;
      }
 
 
    else if (compare_strings(instr_format->op1, "m8"))
     {
-      deps->max_size = 1;
+
       deps->one = memory;
     }
 
    else if (compare_strings(instr_format->op1, "m16"))
     {
-      deps->max_size = 2;
+
       deps->one = memory;
     }
 
 
    else if (compare_strings(instr_format->op1, "m16/32"))
     {
-      deps->max_size = 4;
+
       deps->one = memory;
     }
 
    else if (compare_strings(instr_format->op1, "m32"))
      {
-       deps->max_size = 4;
+
        deps->one = memory;
      }
 
    else if (compare_strings(instr_format->op1, "m64"))
      {
-       deps->max_size = 8;
+
        deps->one = memory;
      }
 
    else if (compare_strings(instr_format->op1, "m16/32/64"))
      {
-       deps->max_size = 8;
+
        deps->one = memory;
      }
    else if (compare_strings(instr_format->op1, "re18"))
      {
-       deps->max_size = 0; // This is a flag
+
        deps->one = flag;
      }
   
    else if (compare_strings(instr_format->op1, "Flags"))
      {
-       deps->max_size = 0;
+
        deps->one = rflags;
        
      }
 
    else if (compare_strings(instr_format->op1, "moffs8"))
      {
-       deps->max_size = 1;
+
        deps->one = memory_offset;
      }
 
    else if (compare_strings(instr_format->op1, "moffs16"))
      {
-       deps->max_size = 2;
+
        deps->one = memory_offset;
      }
 
    else if (compare_strings(instr_format->op1, "ST"))
      {
-       deps->max_size = 8;
+
        deps->one = stack_reg;
      }
 
    else if (compare_strings(instr_format->op1, "STi"))
      {
-       deps->max_size = 8;
+
        deps->one = stack_reg;
      }
 
    else if (compare_strings(instr_format->op1, "xmm"))
      {
-       deps->max_size = 16;
+
        deps->one = xmm;
      }
 
    else if (compare_strings(instr_format->op1, "mm"))
      {
-       deps->max_size = 16;
+
        deps->one = mm;
      }
    else if (compare_strings(instr_format->op1, "rel8"))
      {
-       deps->max_size = 1;
+
        deps->one= relative_offset;
      }
 
    else if (compare_strings(instr_format->op1, "rel16/32"))
      {
-       deps->max_size = 4;
+
        deps->one = relative_offset;
      }
 
   else if (*(instr_format->op1) == 0)
       {
-          deps->max_size = 0;
+
           deps->one = implied_reg;
       }
 
 
    else if (compare_strings(instr_format->op1, "r/m16"))
      {
-       deps->max_size = 2;
+
        deps->one = mem_or_reg;
      }
 
    else if (compare_strings(instr_format->op1, "r/m16/32"))
      {
-       deps->max_size = 4;
+
        deps->one = mem_or_reg;
      }
 
    else if (compare_strings(instr_format->op1, "r/m32"))
      {
-       deps->max_size = 4;
+
        deps->one = mem_or_reg;
      }
 
    else if (compare_strings(instr_format->op1, "r/m32/64"))
      {
-       deps->max_size = 8;
+
        deps->one = mem_or_reg;
      }
 
   else if (compare_strings(instr_format->op1, "r/m64/16"))
      {
-       deps->max_size = 8;
+
        deps->one = push_or_pop;
      }
 
   else if (compare_strings(instr_format->op1, "xmm/m128"))
     {
-      deps->max_size = 16;
+
       deps->one = xmm_or_mem;
     }
 
   else if (compare_strings(instr_format->op1, "xmm/m64"))
     {
-      deps->max_size = 8;
+
       deps->one = xmm_or_mem;
     }
   else if (compare_strings(instr_format->op1, "xmm/m32"))
     {
-      deps->max_size = 4;
+
       deps->one = xmm_or_mem;
     }
 	    
@@ -234,207 +228,179 @@ void fill_dependencies ( struct instruction_format *instr_format, struct depende
   
   if (compare_strings(instr_format->op2, "imm8"))
     {
-      deps->max_size = 1;
+
       deps->two = immediate;
     }
 
   else if (compare_strings(instr_format->op2, "imm16/32"))
     {
-      deps->max_size = 4;
+
       deps->two = immediate;
     }
 
    else if (compare_strings(instr_format->op2, "imm16/32/64"))
     {
-      deps->max_size = 8; 
+
       deps->two = immediate;
     }
 
    else if (compare_strings(instr_format->op2, "imm16"))
      {
-       deps->max_size = 2;
+
        deps->two = immediate;
      }
 	    
    else if (compare_strings(instr_format->op2, "r8"))
     {
-      deps->max_size = 1;
+
       deps->two = reg;
     }
 
 
    else if (compare_strings(instr_format->op2, "r16/32/64"))
     {
-      deps->max_size = 8;
+
       deps->two = reg;
     }
 
 
    else if (compare_strings(instr_format->op2, "r/m8"))
     {
-      deps->max_size = 1;
       deps->two = mem_or_reg;
     }
 
    else if (compare_strings(instr_format->op2, "r/m16/32/64"))
     {
-      deps->max_size = 8;
       deps->two = mem_or_reg;
     }
 
 
    else if (compare_strings(instr_format->op2, "m8"))
     {
-      deps->max_size = 1;
       deps->two = memory;
     }
 
    else if (compare_strings(instr_format->op2, "m16"))
     {
-      deps->max_size = 2;
       deps->two = memory;
     }
 
 
    else if (compare_strings(instr_format->op2, "m16/32"))
     {
-      deps->max_size = 4;
       deps->two = memory;
     }
 
    else if (compare_strings(instr_format->op2, "m32"))
      {
-       deps->max_size = 4;
        deps->two = memory;
      }
 
    else if (compare_strings(instr_format->op2, "m64"))
      {
-       deps->max_size = 8;
        deps->two = memory;
      }
 
    else if (compare_strings(instr_format->op2, "m16/32/64"))
      {
-       deps->max_size = 8;
        deps->two = memory;
      }
    else if (compare_strings(instr_format->op2, "re18"))
      {
-       deps->max_size = 0; // This is a flag
        deps->two = flag;
      }
   
    else if (compare_strings(instr_format->op2, "Flags"))
      {
-       deps->max_size = 0;
        deps->two = rflags;
        
      }
 
    else if (compare_strings(instr_format->op2, "moffs8"))
      {
-       deps->max_size = 1;
        deps->two = memory_offset;
      }
 
    else if (compare_strings(instr_format->op2, "moffs16"))
      {
-       deps->max_size = 2;
        deps->two = memory_offset;
      }
 
    else if (compare_strings(instr_format->op2, "ST"))
      {
-       deps->max_size = 8;
        deps->two = stack_reg;
      }
 
    else if (compare_strings(instr_format->op2, "STi"))
      {
-       deps->max_size = 8;
        deps->two = stack_reg;
      }
 
    else if (compare_strings(instr_format->op2, "xmm"))
      {
-       deps->max_size = 16;
        deps->two = xmm;
      }
 
    else if (compare_strings(instr_format->op2, "mm"))
      {
-       deps->max_size = 16;
        deps->two = mm;
      }
    else if (compare_strings(instr_format->op2, "rel8"))
      {
-       deps->max_size = 1;
        deps->two = relative_offset;
      }
 
    else if (compare_strings(instr_format->op2, "rel16/32"))
      {
-       deps->max_size = 4;
        deps->two = relative_offset;
      }
 
   else if (*(instr_format->op2) == 0)
       {
-          deps->max_size = 0;
           deps->one = implied_reg;
       }
 
    else if (compare_strings(instr_format->op2, "r/m16/32"))
      {
-       deps->max_size = 4;
        deps->two = mem_or_reg;
      }
 
    else if (compare_strings(instr_format->op2, "r/m16"))
      {
-       deps->max_size = 2;
        deps->two = mem_or_reg;
      }
 
   else if (compare_strings(instr_format->op2, "r/m32"))
      {
-       deps->max_size = 4;
        deps->two = mem_or_reg;
      }
 
    else if (compare_strings(instr_format->op2, "r/m32/64"))
      {
-       deps->max_size = 8;
        deps->two = mem_or_reg;
      }
 
    else if (compare_strings(instr_format->op2, "r/m64"))
      {
-       deps->max_size = 8;
        deps->two = mem_or_reg;
      }
 
    else if (compare_strings(instr_format->op2, "r/m64/16"))
      {
-       deps->max_size = 8;
        deps->two = push_or_pop;
      }
 
    else if (compare_strings(instr_format->op2, "xmm/m128"))
     {
-      deps->max_size = 16;
       deps->two = xmm_or_mem;
     }
 
   else if (compare_strings(instr_format->op2, "xmm/m64"))
     {
-      deps->max_size = 8;
       deps->two = xmm_or_mem;
     }
   else if (compare_strings(instr_format->op2, "xmm/m32"))
     {
-      deps->max_size = 4;
       deps->two = xmm_or_mem;
     }
 	    
@@ -443,7 +409,10 @@ void fill_dependencies ( struct instruction_format *instr_format, struct depende
        printf("%d: ",dependencies_filled );
        printf("%s \n", instr_format->op2);
      }
-  
+
+
+  fill_possible_sizes(&deps->allowed_sizes, instr_format->op1);
+  fill_possible_sizes(&deps->allowed_sizes, instr_format->op2);
 }
 
 

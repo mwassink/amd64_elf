@@ -7,6 +7,19 @@ enum Basic_Operands {immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg
 
 enum section_types {text, bss};
 // These are necessary for the instruction, given the mnemonic or the ID
+
+
+
+struct available_sizes
+{
+  bool one_byte;
+  bool byte_high;
+  bool byte_2;
+  bool byte_4;
+  bool byte_8;
+  bool byte_16;
+};
+
 struct dependencies
 {
   // NEEDS INIT FUNCTION
@@ -14,7 +27,7 @@ struct dependencies
   enum Basic_Operands one;
   enum Basic_Operands two;
   int highest_ring; // User space would be the highest, 3
-  int max_size; // In BYTES
+  struct available_sizes allowed_sizes;
 };
 
 struct instruction_format {
@@ -134,6 +147,7 @@ struct memory_op_info
   int reg1_off, reg2_off; // -1 if the register does not exist
   bool sib; // Good easy way to check for the sib byte 
 };
+
 
 
 
