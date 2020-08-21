@@ -2,8 +2,9 @@
 #define CUSTOMTYPES_H
 #include <stdbool.h>
 
-enum Basic_Operands {immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment, implied_reg,
-		     flag, empty, rflags, memory_offset, relative_offset, push_or_pop, xmm_or_mem};
+enum Basic_Operands {none, immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment, implied_reg,
+		     flag, empty, rflags, memory_offset, relative_offset, push_or_pop, xmm_or_mem, rax,
+                     eflags, rel, not_found};
 
 enum section_types {text, bss};
 // These are necessary for the instruction, given the mnemonic or the ID

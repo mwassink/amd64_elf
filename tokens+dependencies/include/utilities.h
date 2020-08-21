@@ -12,8 +12,9 @@ void switch_on_possible_sizes(int in, struct available_sizes *sizes_in);
 void fill_possible_sizes(struct available_sizes *sizes_in, char * instruction_in);
 int * possible_sizes(char * available_operands_in);
 inline int move_to_general(const char * input_string, int start_iterator, char general_char)
-
-
+bool check_for_segment_register(char *reg);
+enum Basic_Operands type_fallback(const char * in);
+enum Basic_Operands operand_type_return(const char *in);
 
 #endif
 

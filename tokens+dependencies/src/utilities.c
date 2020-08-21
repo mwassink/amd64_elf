@@ -232,3 +232,297 @@ void fill_possible_sizes(struct available_sizes *sizes_in, char * instruction_in
 }
 
 
+
+bool check_for_segment_register(char *reg)
+{
+  // Compilers like to use the stack registers
+  short int* ptr = (short int*)reg;
+  if (sizeof (*ptr) == 2)
+    {
+      // es cs ss ds fs gs 0x65 0x63 0x73 0x64 0x66 0x67
+      switch (*ptr)
+        {
+        case 0x6573:
+          return true;
+        case 0x6373:
+          return true;
+        case 0x7373:
+          return true;
+        case 0x6473:
+          return true;
+        case 0x6673:
+          return true;
+        case 0x6773:
+          return true;
+        default:
+          return false;
+        }
+    }
+
+  else
+    {
+      char arr[4];
+      arr[0] = reg[0]; arr[1] = reg[1];
+      arr[2] = 0; arr[3] = 0;
+      int *ptr = (int *)reg;
+      switch (*ptr)
+        {
+        case 0x65730000:
+          return true;
+        case 0x63730000:
+          return true;
+        case 0x73730000:
+          return true;
+        case 0x64730000:
+          return true;
+        case 0x66730000:
+          return true;
+        case 0x67730000:
+          return true;
+        default:
+          return false;
+        }
+
+
+    }
+
+}
+
+
+enum Basic_Operands type_fallback(const char * in)
+{
+  char type[6] = {0};
+  int iterator = 0;
+
+
+
+  if (in[0] == 0) {
+    return none;
+  }
+
+
+
+    
+  while (in[iterator] != 0 && (in[iterator] > 57 && in[iterator] < 48)) // not a number or a zero
+    {
+      type[iterator] = in[iterator];
+    }
+
+  if (compare_strings(type, "m"))
+    {
+      return memory;
+      
+    }
+  
+  else if (compare_strings(type, "r/m"))
+    {
+      return mem_or_reg;
+    }
+
+  else if (compare_strings(type, "imm"))
+    {
+      return immediate;
+    }
+
+  else if (compare_strings(type, "r"))
+    {
+      return reg;
+    }
+
+  else if (compare_strings(type, "moffs"))
+    {
+      return memory_offset;
+    }
+
+  else if (compare_strings(type, "xmm"))
+    {
+      return xmm;
+    }
+
+  else if (compare_strings(type, "xmm/m"))
+    {
+      return xmm_or_mem;
+    }
+
+  else if (check_for_segment_register(type))
+    {
+      return segment;
+    }
+
+  // Already checked for the stack register
+  else if (compare_strings(type, "eFlags"))
+    {
+      return eflags;
+    }
+
+  else if(compare_strings(type, "rel"))
+    {
+      return rel;
+    }
+
+  else
+    {
+      return not_found;
+    }
+    
+  
+}
+
+enum Basic_Operands operand_type_return(const char *in)
+{
+  // Read until a size, a slash or a 0
+   if (compare_strings(in, "imm8"))
+    {
+      return immediate;
+    }
+
+  else if (compare_strings(in, "imm16/32"))
+    {
+      return immediate;
+    }
+
+   else if (compare_strings(in, "imm16/32/64"))
+    {
+
+      return  immediate;
+    }
+
+
+   else if (compare_strings(in, "r8"))
+    {
+
+      return  reg;
+    }
+
+
+   else if (compare_strings(in, "r16/32/64"))
+    {
+
+      return reg;
+    }
+
+
+   else if (compare_strings(in, "r/m8"))
+    {
+
+      return  mem_or_reg;
+    }
+
+   else if (compare_strings(in, "r/m16/32/64"))
+    {
+
+      return  mem_or_reg;
+    }
+
+   else if (compare_strings(in, "r/m16/32"))
+     {
+
+       return mem_or_reg;
+     }
+
+
+   else if (compare_strings(in, "m8"))
+    {
+
+      return  memory;
+    }
+
+   else if (compare_strings(in, "m16"))
+    {
+
+      return memory;
+    }
+
+
+   else if (compare_strings(in, "m16/32"))
+    {
+
+      return memory;
+    }
+
+   else if (compare_strings(in, "m32"))
+     {
+
+       return memory;
+     }
+
+   else if (compare_strings(in, "m64"))
+     {
+
+       return  memory;
+     }
+
+   else if (compare_strings(in, "m16/32/64"))
+     {
+
+       return memory;
+     }
+   else if (compare_strings(in, "re18"))
+     {
+
+       return  flag;
+     }
+  
+   else if (compare_strings(in, "Flags"))
+     {
+
+       return rflags;
+       
+     }
+
+   else if (compare_strings(in, "moffs8"))
+     {
+
+       return memory_offset;
+     }
+
+   else if (compare_strings(in, "moffs16"))
+     {
+
+       return  memory_offset;
+     }
+
+   else if (compare_strings(in, "ST"))
+     {
+
+       return stack_reg;
+     }
+
+   else if (compare_strings(in, "STi"))
+     {
+
+       return stack_reg;
+     }
+
+   else if (compare_strings(in, "xmm"))
+     {
+
+       return xmm;
+     }
+
+   else if (compare_strings(in, "mm"))
+     {
+
+       return = mm;
+     }
+   else if (compare_strings(in, "rel8"))
+     {
+
+       return relative_offset;
+     }
+
+   else if (compare_strings(in, "rel16/32"))
+     {
+
+       return relative_offset;
+     }
+
+   else
+     {
+       return type_fallback(in);
+     }
+
+   
+}
+
+

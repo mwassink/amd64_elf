@@ -12,15 +12,17 @@
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
 
-void fill_string_with_line(int max_size, char * string, FILE *fptr)
+int fill_string_with_line(int max_size, char * string, FILE *fptr)
 {
   char in = 0;
-  for (int iterator = 0; in != '\n'; ++iterator)
+  int iterator = 0;
+  for (; in != '\n'; ++iterator)
     {
       in = fgetc(fptr);
       string[iterator] = in;
     }
-   
+
+  return iterator;
 }
 
 
@@ -48,60 +50,7 @@ void init_op_info(struct memory_op_info *in)
   in->sib_scale = 0;
 }
 
-bool check_for_segment_register(char *reg)
-{
-  // Compilers like to use the stack registers
-  short int* ptr = (short int*)reg;
-  if (sizeof (*ptr) == 2)
-    {
-      // es cs ss ds fs gs 0x65 0x63 0x73 0x64 0x66 0x67
-      switch (*ptr)
-        {
-        case 0x6573:
-          return true;
-        case 0x6373:
-          return true;
-        case 0x7373:
-          return true;
-        case 0x6473:
-          return true;
-        case 0x6673:
-          return true;
-        case 0x6773:
-          return true;
-        default:
-          return false;
-        }
-    }
 
-  else
-    {
-      char arr[4];
-      arr[0] = reg[0]; arr[1] = reg[1];
-      arr[2] = 0; arr[3] = 0;
-      int *ptr = (int *)reg;
-      switch (*ptr)
-        {
-        case 0x65730000:
-          return true;
-        case 0x63730000:
-          return true;
-        case 0x73730000:
-          return true;
-        case 0x64730000:
-          return true;
-        case 0x66730000:
-          return true;
-        case 0x67730000:
-          return true;
-        default:
-          return false;
-        }
-
-
-    }
-
-}
 
   
 int ascii_to_int( char * in, int *returned_index)
