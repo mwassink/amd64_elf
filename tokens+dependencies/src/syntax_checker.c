@@ -12,29 +12,48 @@
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
 
-int fill_string_with_line(int max_size, char * string, FILE *fptr)
-{
-  char in = 0;
-  int iterator = 0;
-  for (; in != '\n'; ++iterator)
-    {
-      in = fgetc(fptr);
-      string[iterator] = in;
-    }
-
-  return iterator;
-}
 
 
 
-int check_for_section_label(const char * input_string)
+enum section_types check_for_section_label(const char * input_string, int * iterator_in)
 {
   int start_iterator = 0;
-  for (; input_string[start_iterator] == ' ' || input_string[start_iterator] == 9);
+  char temp_string[30] = {0};
+  for (; input_string[start_iterator] == ' ' || input_string[start_iterator] == 9; start_iterator++);
 
-  if (input_string[start_iterator] != '.')
+  if (input_string[start_iterator] != '.') //start iterator may be 0
     {
+      *iterator_in = 0; // Just start from the beginning
       return -1;
+    }
+
+  int string_iterator = 0;
+  for (; input_string[start_iterator] != ' '; ++start_iterator, ++string_iterator)
+    {
+      temp_string[string_iterator]= input_string[start_iterator];
+    }
+
+  if (compare_strings(temp_string, ".text"))
+    {
+      *iterator_in = start_iterator;
+      return text;
+    }
+
+  else if (compare_strings(temp_string, ".bss"))
+    {
+      *iterator_in = start_iterator;
+      return bss;
+    }
+
+  else if (compare_strings(temp_string, ".data"))
+    {
+      *iterator_in = start_iterator;
+      return data;
+    }
+  else
+    {
+      *iterator_in = 0;
+      return invalid_section_label;
     }
   
 }
@@ -68,199 +87,22 @@ int ascii_to_int( char * in, int *returned_index)
   return sum;
 }
 
-void search_line(FILE * in, struct instruction_pieces *arguments)
+void search_line(FILE * file_in, struct instruction_pieces *arguments, enum section_types current_type)
 {
   // The fp has information on where in the file we are, this assumes that we
   // are at the beginning of the line and that the file is opened already
   // If the beginning of the line is not a space then it should be a label
+  int line_iterator = 0;
   char input_string[250] = {0};// Allocate 250 bytes for the string
-  size_t line_length;
-  int offset = 0;
-  // Hopefully whoever wrote the assembly makes good use of endlines
-  line_length  = getline(&input_string, &line_length, in); // Should not be able to distinguish between these when called
-  char label[100] = {0};
-  char mnemonic[16] = {0};
-  char *op1_mnemonic = malloc (16);
-  char *op2_mnemonic = malloc(16);
-  if (input_string[0] != ' ') // This should be a label
+  size_t line_length = fill_string_with_line(250, input_string, file_in);
+  enum section_types type = check_for_section_label(input_string);
+
+  if (type == invalid_section_label)
     {
-      for (; input_string[offset] != ' ' && input_string[offset] != '\n'; ++offset)\
-	{
-	  label[offset] = input_string[offset];
-	}
-      label[offset+1] = 0;
+      fprintf(stderr, "Invalid section label");
     }
 
-  for (; input_string[offset] == ' '; ++offset); // Need to keep looking until the end of a line is found
-  // Regardless we can keep going until we find the mnemonic for the instruction
-  // NOTE: that this will be put into the checker and search the array for the right insdtr
-  // If the instr does not exist then this will die
-  if (input_string[offset] == '\n')
-    {
-      return;
-    }
-  // First check if this is asking for a lock. I think that is the only prefix we can have
-  // Slow but probably rare 
-  if (input_string[offset] == 'l' && input_string[offset + 1] == 'o' &&
-      input_string[offset + 2] == 'c' && input_string[offset] == 'k')
-  {
-      arguments->wants_lock = 1;
-  }
-
-
-
-  for (int i = 0; input_string[offset] != ' '; ++offset, ++i)
-    {
-      mnemonic[i] = input_string[offset];
-     
-    }
-
-  for (; input_string[offset] == ' '; ++offset);
-
-  if (input_string[offset] == '\n')
-    {
-      return;
-    }
-
-  // $ denotes immediate, number will denote offset, ( will denote a mem, % just reg
-
-  else if (input_string[offset] == '(') // Thsi is a memory operand, probably does need some type of special loop until the next parentheses
-    {
-      arguments->op1 = memory;
-      for (int i = 0; input_string[offset] != ')'; ++offset)
-	{
-	  op1_mnemonic[i] = input_string[offset];
-	}
-    }
-
-  else if (input_string[offset] == '%') // this is a register, does not need a special loop
-    {
-      if (input_string[offset + 1] == 'x')
-        {
-          arguments->op1 = xmm;
-        }
-      else if (input_string[offset + 1] == 'm')
-        {
-          arguments->op1 = mm;
-        }
-      else if (input_string[offset + 1] == 's' && input_string[offset + 2] == 't')
-        {
-          // Stack register
-          arguments->op1 = stack_reg;
-        }
-      else if (check_for_segment_register(input_string + offset))
-        {
-        arguments->op1 = segment;
-        }
-
-      for (int i = 0; input_string[offset] != ' '; ++offset)
-	{
-	  op1_mnemonic[i] = input_string[offset]; // wil point at right one later
-	}
-    }
-
-  else if (input_string[offset] > 48 && input_string[offset]  < 58) // should be an integer or a 0 which would signify an offset. An immediate would have $
-    {
-      arguments->op1 = memory;
-      for (int i = 0; input_string[offset] != ')'; ++offset)
-	{
-	  op1_mnemonic[i] = input_string[offset]; // will be changed later to point at right one 
-	}
-    }
-  // Otherwise it should be an immediate
-  else
-    {
-      arguments->op1 = immediate; // Now we need to loop until the space is found
-      for (int i = 0; input_string[offset] != ' '; ++offset)
-	{
-	  op1_mnemonic[i] = input_string[offset]; // Will be changed later
-	}
-      
-    }
-  // Add the word to the above contrainsts, make the struct point at them 
-  arguments->op1_mnemonic = op1_mnemonic;
   
-
-  // THE FIRST ARG should be processed, now onto the second
-
-  for (; input_string[offset] == ' '; ++offset);
-
-  if (input_string[offset] == '\n')
-    {
-      return;
-    }
-
-  else if (input_string[offset] != ',') // it should always be some type of comma to separate the operands
-    {
-      fprintf(stderr, "Unrecognized arguments");
-      assert(1 == 0);
-    }
-
-  offset++;
-
-  for (; input_string[offset] == ' '; ++offset); // loop until the next argument
-
-  if (input_string[offset] == '\n')
-    {
-      return;
-    }
-
-  else if (input_string[offset] == '(') // Thsi is a memory operand, probably does need some type of special loop until the next parentheses
-    {
-      arguments->op2 = memory;
-      for (int i = 0; input_string[offset] != ')'; ++offset)
-	{
-	  op2_mnemonic[i] = input_string[offset];
-	}
-    }
-
-  else if (input_string[offset] == '%') // this is a register, does not need a special loop
-    {
-      if (input_string[offset + 1] == 'x')
-        {
-          arguments->op2 = xmm;
-        }
-      else if (input_string[offset + 1] == 'm')
-        {
-          arguments->op2 = mm;
-        }
-      else if (input_string[offset + 1] == 's' && input_string[offset + 2] == 't')
-        {
-          // Stack register
-          arguments->op2 = stack_reg;
-        }
-      else if (check_for_segment_register(input_string + offset))
-        {
-        arguments->op2 = segment;
-        }
-
-      for (int i = 0; input_string[offset] != ' '; ++offset)
-	{
-	  op2_mnemonic[i] = input_string[offset]; // wil point at right one later
-	}
-    }
-
-  else if (input_string[offset] > 48 && input_string[offset]  < 58) // should be an integer or a 0 which would signify an offset
-    {
-      arguments->op2 = memory;
-      for (int i = 0; input_string[offset] != ')'; ++offset)
-	{
-	  op2_mnemonic[i] = input_string[offset]; // will be changed later to point at right one 
-	}
-    }
-
-
-  else
-    {
-      arguments->op2 = immediate; // Now we need to loop until the space is found
-      for (int i = 0; input_string[offset] != ' '; ++offset)
-	{
-	  op2_mnemonic[i] = input_string[offset]; // Will be changed later
-	}
-      
-    }
-
-  arguments->op2_mnemonic = op2_mnemonic; // Need to free later
 
   // Now this function should be done 
 

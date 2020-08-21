@@ -525,4 +525,40 @@ enum Basic_Operands operand_type_return(const char *in)
    
 }
 
+int fill_string_with_line(int max_size, char * string, FILE *fptr)
+{
+  char in = 0;
+  int iterator = 0;
+  for (; in != '\n'; ++iterator)
+    {
+      in = fgetc(fptr);
+      string[iterator] = in;
+    }
+
+  return iterator;
+}
+
+int check_for_jump_label(const char *string_in, char *replaced, int *current_spot)
+{
+  *current_spot = 0;
+  if (string_in[0] != ' ' && string_in[0] != 9)
+    {
+      int i = 0;
+      for (; string_in[i] != ':'; ++i)
+	{
+	  if (string_in[i] == '\n' || string_in[i] == ' ')
+	    {
+	      return -1;
+	    }
+	  replaced[i] = string_in[i];
+	}
+      return i;
+    }
+
+  else
+    {
+      return 0;
+    }
+}
+
 

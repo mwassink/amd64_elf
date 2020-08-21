@@ -1,4 +1,4 @@
-#ifndef CUSTOMTYPES_H
+ #ifndef CUSTOMTYPES_H
 #define CUSTOMTYPES_H
 #include <stdbool.h>
 
@@ -6,7 +6,7 @@ enum Basic_Operands {none, immediate, memory, reg, sib, mem_or_reg, mm, xmm, sta
 		     flag, empty, rflags, memory_offset, relative_offset, push_or_pop, xmm_or_mem, rax,
                      eflags, rel, not_found};
 
-enum section_types {text, bss};
+enum section_types {text, bss, data, invalid_section_label};
 // These are necessary for the instruction, given the mnemonic or the ID
 
 

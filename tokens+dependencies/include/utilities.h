@@ -15,6 +15,6 @@ inline int move_to_general(const char * input_string, int start_iterator, char g
 bool check_for_segment_register(char *reg);
 enum Basic_Operands type_fallback(const char * in);
 enum Basic_Operands operand_type_return(const char *in);
-
+int fill_string_with_line(int max_size, char * string, FILE *fptr);
 #endif
 
