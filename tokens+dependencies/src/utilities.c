@@ -562,3 +562,55 @@ int check_for_jump_label(const char *string_in, char *replaced, int *current_spo
 }
 
 
+int numbits_from_suffix(const char * instruction_at_suffix)
+{
+  if (instruction_at_suffix[0] == 'd')
+    {
+      return 32;
+    }
+
+  else if (instruction_at_suffix[0] == 'q')
+    {
+      return 64;
+    }
+
+  else if (instruction_at_suffix[0] == 'b')
+    {
+      return 8;
+    }
+
+  else if (instruction_at_suffix[0] == 'w')
+    {
+      return 16;
+    }
+
+  else if (compare_strings(instruction_at_suffix, "dqu"))
+    {
+      return 128;
+    }
+
+  else if (compare_strings(instruction_at_suffix, "l"))
+    {
+      return 32;
+    }
+
+  else if (compare_strings(instruction_at_suffix, "ups"))
+    {
+      return 128;
+    }
+
+  else if (compare_strings(instruction_at_suffix, "aps"))
+    {
+      return 128;
+    }
+
+  else if (compare_strings(instruction_at_suffix, "dqa"))
+    {
+      return 128;
+    }
+
+  
+}
+
+
+

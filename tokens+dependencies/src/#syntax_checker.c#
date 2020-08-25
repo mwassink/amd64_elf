@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
@@ -461,6 +461,12 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     {
       return 0;
     }
+
+
+  
+
+
+
   
   
   return 1;
