@@ -14,6 +14,25 @@
 
 
 
+bool check_sizes(int size_in, struct available_sizes available)
+{
+  switch (size_in)
+    {
+    case 8:
+      return available.one_byte;
+    case 16:
+      return available.byte_2;
+    case 32:
+      return available.byte_4;
+    case 64:
+      return available.byte_8;
+    case 128:
+      return available.byte_16;
+      default:
+	return 0;
+      
+    }
+}
 
 enum section_types check_for_section_label(const char * input_string, int * iterator_in)
 {
@@ -430,6 +449,7 @@ void check_instruction(struct instruction_pieces *in, unsigned long int *shorter
       for (int iterator = 0; iterator < valid_neighbors_number; ++iterator)
         {
           // NOT DONE YET
+	  // Will use the dependencies check function for this one
           if ()
         }
 
@@ -461,6 +481,12 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     {
       return 0;
     }
+
+
+  
+
+
+
   
   
   return 1;
