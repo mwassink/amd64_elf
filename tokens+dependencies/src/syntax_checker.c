@@ -119,8 +119,10 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
   if (type == invalid_section_label)
     {
       fprintf(stderr, "Invalid section label");
+      assert(0 == 1);
     }
 
+  // Make sure that everything is part of the text section
   
 
   

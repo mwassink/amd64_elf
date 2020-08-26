@@ -612,5 +612,22 @@ int numbits_from_suffix(const char * instruction_at_suffix)
   
 }
 
+int check_for_lock_prefix(const char * string, int *start_index)
+{
+
+
+  if (compare_strings(string + *start_index, "lock"))
+    {
+      *start_index += 4;
+      return *start_index;
+    }
+
+  else
+    {
+      return -1;
+    }
+}
+
+
 
 
