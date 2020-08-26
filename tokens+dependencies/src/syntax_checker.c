@@ -28,8 +28,8 @@ bool check_sizes(int size_in, struct available_sizes available)
       return available.byte_8;
     case 128:
       return available.byte_16;
-      default:
-	return 0;
+    default:
+      return 0;
       
     }
 }
@@ -123,15 +123,15 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
 
   
 
-  // Now this function should be done 
+  
 
 
 }
-  // NOT DONE
+  
   
   // TODO: Make the array of instructions from the table and the structs of instructions
   // Along with the IDs of the instructions
-int binary_lookup(unsigned long int in, unsigned long int* array_in)
+int binary_lookup(unsigned  int in, unsigned  int* array_in)
 {
   int high = 1073;
   int low = 0;
@@ -154,118 +154,57 @@ int binary_lookup(unsigned long int in, unsigned long int* array_in)
     return mid;
 }
 
-int rip_suffix(char *instruction_mnemonic)
+int rip_suffix(char *instruction_mnemonic, int depth)
 {
   //  suffixes
-  int iterator = 0;
-  while (instruction_mnemonic[iterator++]);
-  iterator--;
-  switch (instruction_mnemonic[iterator])
+  int length = 0;
+  while (instruction_mnemonic[length])
     {
-    case 'q': // quadword
-      instruction_mnemonic[iterator] = 0;
-      return 0;
-    case 'd':
-      instruction_mnemonic[iterator] = 0;
-      return 0;
-    case 'w':
-      instruction_mnemonic[iterator] = 0;
-      return 0;
-    case 'b':
-      instruction_mnemonic[iterator] = 0;
-      return 0;
-    case 'h':
-      instruction_mnemonic[iterator] = 0;
-      return 0;
-    default:
-      return -1;
-      
-      
+      length++;
+    }
+  
+  for (int i = 0; i < depth; ++i)
+    {
+      instruction_mnemonic[length - i] = 0;
     }
 
 
 }
 
   
-int look_for_mnemonic(char *instr_mnemonic, unsigned long int* shorter_mnemonics, unsigned long int* longer_mnemonics)
+int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array)
 {
-  // The string should be converted to an int after the % register
-  // Will be compared against the other ints, but in a struct array?
-  // Note: should I make an array of structs then search through or make an array
-  // of ints and have them point to the proper struct?
-  // There are 1074 arguments --> 0-1073
-  unsigned long int name_id;
-  int stripped  = -1; 
-  name_id = name_to_id(instr_mnemonic); // eval to 0 if this is too long
-  int index = -1;
+  int high = 1073; int low = 0; int mid = 0;
+
+  int searches = 0;
   
-  if (!name_id)
-    index = binary_lookup(name_id, longer_mnemonics);
 
-  else
-    index = binary_lookup(name_id, shorter_mnemonics);
-
-  if (index != -1) // found
-    return index;
-
-  else // look again wi8th the stripped prefix
+  while (searches++ < 20 && array[searches] != mnemonic_ID)
     {
-      char copy[16]; int iterator = 0;
-      for (; instr_mnemonic[iterator] != 0; ++iterator )
+      mid = (high + low)/2;
+      if (mnemonic_ID > array[mid]) // We are too low currently
 	{
-	  copy[iterator] = instr_mnemonic[iterator];
+	  low = mid;
 	}
-      
-      stripped = rip_suffix(copy);
-      
-      if (!stripped)
+      else if (mnemonic_ID < array[mid])
 	{
-	  name_id = name_to_id(copy);
-	  if (!name_id)
-	    index = binary_lookup(name_id, longer_mnemonics);
-	  else
-	    index = binary_lookup(name_id, shorter_mnemonics);
-
-	  if (index != -1)
-	    return index;
-	  else
-	    {
-	      fprintf(stderr, "Failure to find any instruction for the instruction");
-	      assert(0 == 1);
-	    }
+	  high = mid;
 	}
-
       else
-	    {
-          fprintf(stderr, "No mnemonic could be found with the mnemonic on this line");
-          assert(0 == 1);
-	    }
+	return mid;
     }
+
+  return -1;
+  
+}
     
 
 
-}
-
-int look_for_reg(char *reg_in, unsigned long int *reg_array)
-{
-  // start with the percent symbol % and move forward one
-  unsigned long int reg_no = name_to_id(reg_in+1);
-  int index = binary_lookup(reg_no, reg_array);
-
-  if (index != -1)
-    return index;
-
-  else
-    {
-      fprintf(stderr, "Failure to find the register for the given ");
-      assert(0 == 1);
-    }
-
-}
 
 static inline int check_for_offset(char * string, int *start_parentheses, int *disp_value)
 {
   // Should return the number of bytes for the offset
+  // Modified should be the index at which the parentheses start
   int length_counter = 2;
   int total = 0;
   if (string[0] == '0' && string[1] == 'x') // Hexadecimal number
@@ -282,12 +221,13 @@ static inline int check_for_offset(char * string, int *start_parentheses, int *d
 
       if (length_counter - 2 > 8) // Too big
 	{
-	  fprintf(stderr, "Disp is greater than 8 bytes");
+	  fprintf(stderr, "Disp is greater than 4 bytes");
 	  assert(0 == 1);
 	}
       
       if ((length_counter -2) > 2) // Need more than one byte to process this
 	return 4;
+      
       else
 	return 1;
     }
@@ -383,40 +323,73 @@ void check_instruction(struct instruction_pieces *in, unsigned long int *shorter
 {
   /* Now some requirements for instructions will be listed
      - < 2 memory operands 
-     - No direction in ModRM, rather in the instruction 
-     - < 2 immediates
+     - No direction in ModRM, rather in the instruction  
+    - < 2 immediates
      - If a dependency check fails for a mnemonic, try one of the nearest ones. Likely, lots of them will fail as of now
    */
+  int ID = name_to_id(in->instruction_mnemonic);
+  int index = -1;
+  if (!ID)
+    {
+      ID = name_to_id((in->instruction_mnemonic +8));
+        for (int i = 0; i < 3; ++i)
+	  {
+	    rip_suffix(in->instruction_mnemonic, i);
+	    search_for_mnemonic(ID, longer_mnemonics );
+	    if (index != -1)
+	      break;
+	  }
+    }
 
-  // Walk through this, 
-  int index = look_for_mnemonic(in->instruction_mnemonic, shorter_mnemonics,  longer_mnemonics);
+  else
+    {
+      for (int i = 0; i < 3; ++i)
+	  {
+	    rip_suffix(in->instruction_mnemonic, i);
+	    search_for_mnemonic(ID, shorter_mnemonics );
+	    if (index != -1)
+	      break;
+	  }
+      
+    }
 
-
+  
   if (index == -1)
     {
-      printf("Mnemonic not found for the instruction");
-      assert(1 == 0);
+      fprintf(stderr, "Failure to find a matching mnemonic for the opcode");
+      assert(0 == 1);
     }
-  unsigned long int name_id = name_to_id(in->instruction_mnemonic);
-  // If the name_id comes out to 0 then we know that it was found in the longer ones, otherwsie it was found in the shorter ones
-  if (name_id)
+  
+  else if (ID)
     {
 
       // Found in the shorter ones, look at the dependencies for this one and its neighbors
       int valid_neighbors[16] = { 0 };
       int valid_neighbors_number = 0;
       // Check below
-      for (int i = 0; shorter_mnemonics[index - i] == name_id; ++i)
+      for (int i = 0; shorter_mnemonics[index - i] == ID; ++i) // look below thje index
       {
           valid_neighbors[i] = index - i;
           valid_neighbors_number++;
       }
       
-      for (int i = 0; shorter_mnemonics[index + i] == name_id; ++i)
+      for (int i = 0; shorter_mnemonics[index + i] == ID; ++i) // look above 
       {
           valid_neighbors[i] = index + i;
           valid_neighbors_number++;
       }
+
+
+       for (int iterator = 0; iterator < valid_neighbors_number; ++iterator)
+        {
+          // NOT DONE YET
+	  // Will use the dependencies check function for this one
+          if (assert_dependencies(in, dep[(valid_neighbors[valid_neighbors_number])]));
+	  {
+	    return valid_neighbors_number; // THE TRUTH
+	  }
+        }
+
       
     }
 
@@ -425,32 +398,29 @@ void check_instruction(struct instruction_pieces *in, unsigned long int *shorter
       // Found in the longer ones, look at the dependencies for this one and its neighbors
       int valid_neighbors[16] = { 0 };
       int valid_neighbors_number = 0;
+      
       // Check below
-      for (int i = 0; longer_mnemonics[index - i] == name_id; ++i)
+      for (int i = 0; longer_mnemonics[index - i] == ID; ++i)
       {
           valid_neighbors[valid_neighbors_number++] = index - i;
           
       }
       // Check above 
-      for (int i = 0; longer_mnemonics[index + i] == name_id; ++i)
+      for (int i = 0; longer_mnemonics[index + i] == ID; ++i)
       {
           valid_neighbors[valid_neighbors_number++] = index + i;
       }
-      // Now to make a note about the direction and field bits
-      /* 
-         - The direction and field buts may not be there for all of them
-         - While many have d and w bits, others may have a different one in one of theirs
-      */
-
-      // Calling the assert deps on all of these
-      // Declare a match variable on this to make sure that it works
+      
 
       bool match_found = 0;
       for (int iterator = 0; iterator < valid_neighbors_number; ++iterator)
         {
           // NOT DONE YET
 	  // Will use the dependencies check function for this one
-          if ()
+          if (assert_dependencies(in, dep[(valid_neighbors[valid_neighbors_number])]));
+	  {
+	    return valid_neighbors_number; // THE TRUTH
+	  }
         }
 
 
@@ -482,10 +452,15 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
       return 0;
     }
 
-
+  if (!check_sizes(user_in->op1_size, table_in->allowed_sizes))
+    {
+      return 0;
+    }
   
-
-
+  if (!check_sizes(user_in->op2_size, table_in->allowed_sizes))
+    {
+      return 0;
+    }
 
   
   
