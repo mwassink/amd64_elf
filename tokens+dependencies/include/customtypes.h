@@ -102,26 +102,23 @@ struct sib
 {
     // The first thing needed is the scale
     // Next thing needed is the base register
-    int mod_prev;
-    int scale;
-    char* base; // cannot be rbp
-    char* index;
+  int disp_length_in_bytes;
+  int disp_value;
+  int scale;
+  char *operand; // cannot be rbp. This denotes the start of the operand. Could be "-64(%rbp, rax, 2 )"
+  int start_parentheses_index; // relative to the start of the string for the operand
+  int base_index;  // relative to the start of the string for the operand
+  int index_index;  // relative to the start of the string for the operand
 };
 
+// This is for when this actually gets written in binary 
 struct sib_byte
 {
+  
     int ss : 2;
     int index : 3;
     int base : 3;
 };
-
-struct sib_return_info
-{
-    int displacement;
-    struct sib_byte sib_returned;
-};
-
-
 
 
 struct instruction_pieces
@@ -141,12 +138,11 @@ struct instruction_pieces
 
 struct memory_op_info
 {
-  int disp_offset;
+  // Regular memory 
+  int first_paren_offset; // This tells how far along the operand string (like 10(%rax)) ther first parenthese is
   int disp_length;
-  int disp;
-  int sib_scale; // -1 if not available
-  int reg1_off, reg2_off; // -1 if the register does not exist
-  bool sib; // Good easy way to check for the sib byte 
+  unsigned int disp;
+  bool is_mem;
 };
 
 

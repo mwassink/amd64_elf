@@ -11,8 +11,8 @@
 // This file needs to go through line by line and check for tokens. It will just look for whitespace and endlines
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
-
-
+typedef struct memory_op_info regular_memory_operand;
+typedef struct sib sib_pieces;
 
 bool check_sizes(int size_in, struct available_sizes available)
 {
@@ -203,7 +203,7 @@ int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array)
 
 
 
-static inline int check_for_offset(char * string, int *start_parentheses, int *disp_value)
+ inline int check_for_offset(char * string, int *start_parentheses, int *disp_value)
 {
   // Should return the number of bytes for the offset
   // Modified should be the index at which the parentheses start
@@ -253,71 +253,49 @@ static inline int check_for_offset(char * string, int *start_parentheses, int *d
 
       
 // Don't write yet, we need to know whether it is an sib,etc
-struct memory_op_info check_memory_operand(char * memory_instruction_in) // Should be a given that this is a memroy type
+regular_memory_operand check_memory_operand(char * memory_instruction_in) // Should be a given that this is a memroy type
  {
    // Needs to check for an offset first
-   struct memory_op_info info;
-   init_op_info(&info);
-   int length_counter = 0;
-   int disp_value = 0;
-   info.disp_length = check_for_offset(memory_instruction_in, &length_counter, &disp_value);
-   info.disp_offset = length_counter;
-   info.disp = disp_value;
-
-   // Make a loop to look for the next thing other than a space
-   length_counter++;
-   for (; memory_instruction_in[length_counter] == ' '; ++length_counter);
-   // Now the length counter should be at the right spot for the register mnemonic
-   if (memory_instruction_in[length_counter] != '%') // Not a register
-     {
-       fprintf(stderr, "Improper usage with the op1_mnemonic and memory");
-       fprintf(stderr, "The op1_mnemonic needs a register after the parentheses");
-       assert(0 == 1);
-     }
-
+   // SIB -----> offset(base, index, scale)
+   // This does just a regular memory
    
-   info.reg1_off = length_counter;
-   // Now need to look for the next non whitespace
-   for (; memory_instruction_in[length_counter] != ','; ++length_counter); // should be at the comma
-   for (; memory_instruction_in[length_counter] == ' '; ++length_counter); // should be at next non whitespace character
-
-   if (memory_instruction_in[length_counter] == ')') // we do not have more coming
-     {
-       return info;
-     }
-
-   else if (memory_instruction_in[length_counter] == ',')
-     {
-       for (; memory_instruction_in[length_counter] == ' '; ++length_counter);
-       info.sib =  1;
-       if (memory_instruction_in[length_counter] == '%') // the next thing that comes is a reg
-	 {
-	   info.reg2_off = length_counter;
-	 }
-       else
-	 {
-	   fprintf(stderr, "The second operand of the sib was not a register, like it should be");
-	   assert(0 == 1);
-	 }
-
-        for (; memory_instruction_in[length_counter] != ','; ++length_counter); // should be at the comma
-	for (; memory_instruction_in[length_counter] == ' '; ++length_counter); // should be at next non whitespace character
-
-	info.sib_scale = memory_instruction_in[length_counter] - 48;
-
-	if (info.sib_scale != 1 && info.sib_scale != 2 && info.sib_scale != 4 && info.sib_scale != 8)
-	  {
-	    fprintf(stderr, "The scale for the sib is not 1,2,4, or 8");
-	    assert(1 == 0);
-	  }
-	
-	for (; memory_instruction_in[length_counter] == ' '; ++length_counter);
-
-	assert(memory_instruction_in[length_counter] == ')');
-     }
-
-   return info;
+   regular_memory_operand mem_operand;
+   mem_operand.disp = displacement_value;
+   mem_operand.disp_length = check_for_offset(memory_instruction_in, &mem_operand.first_paren_offset, &mem_operand.disp);
+   return mem_operand;
  }
+
+sib_pieces sib_from_string(char *sib_instruction_in)
+{
+  // This just does the whole sib, knowing that it is an sib
+  sib_pieces sib_returned;
+  sib_returned.disp_length_in_bytes = check_for_offset(sib_instruction_in, &sib_returned.start_parentheses_index, &sib_returned.disp_value);
+
+  int iterator = sib_returned.start_parentheses_index + 1;
+
+  iterator = move_to_general(sib_instruction_in, iterator, '%');
+  sib_returned.base_index = iterator;
+
+  iterator = move_to_general(sib_instruction_in, iterator, '%');
+  sib_returned.index_index = iterator;
+
+  iterator = move_to_general(sib_instruction_in, iterator, ',');
+  while (sib_instruction_in[iterator] == ' ')
+    {
+      iterator++
+    }
+
+  if (sib_instruction_in[iterator] < 48 || sib_instruction_in[iterator] > 57)
+    {
+      fprintf(stderr, "Failure with the scale index base byte" );
+    }
+  
+  sib_returned.scale = sib_instruction_in[iterator] - 48;
+  sib_returned.operand = sib_instruction_in;
+
+  return sib_returned;
+  
+}
 
 
 
@@ -470,7 +448,62 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
 }
 
  
+enum Basic_Operands user_string_to_operand(const char *string_in, int start_index, struct memory_op_info *in_case)
+{
+  // Needs to be called after the offset is checked for
   
+  int initial_start = start_index;
+  int temp_zero = 0;
+  in_case->disp_length = check_for_offset(string_in, &temp_zero, &start_index);
+  
+
+  
+  if (string_in[start_index] == '(')
+    {
+      int reg_counter = 0;
+      for (; string_in[start_index] != ')'; ++start_index)
+	{
+	  if (string_in[start_index] == '%')
+	    {
+	      ++reg_counter;
+	    }
+	}
+
+      if (reg_counter == 2)
+	{
+	  return sib;
+	}
+
+      else if (reg_counter == 1)
+	{
+	  return memory;
+	}
+
+      else
+	{
+	  fprintf(stderr, "Failure to parse the memory addressing operand");
+	  assert( 0 == 1);
+	}
+    }
+
+  else if (string_in[start_index] == '%')
+    {
+      return reg;
+    }
+
+
+  else if (string_in[start_index] == '$')
+    {
+      return immediate;
+    }
+
+  else
+    {
+      fprintf(stderr, "operand not found" );
+      assert( 0 == 1);
+    }
+  
+}
 
 void _text_checker(FILE * in);
   // Need to look for the text or the other sections in the beginning
