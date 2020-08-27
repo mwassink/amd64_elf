@@ -8,6 +8,8 @@
 #include "../include/get_instructions.h"
 #include "../include/syntax_checker.h"
 #include "../include/utilities.h"
+
+
 // This file needs to go through line by line and check for tokens. It will just look for whitespace and endlines
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
@@ -43,7 +45,7 @@ enum section_types check_for_section_label(const char * input_string, int * iter
   if (input_string[start_iterator] != '.') //start iterator may be 0
     {
       *iterator_in = 0; // Just start from the beginning
-      return -1;
+      return none;
     }
 
   int string_iterator = 0;
@@ -74,6 +76,35 @@ enum section_types check_for_section_label(const char * input_string, int * iter
       *iterator_in = 0;
       return invalid_section_label;
     }
+  
+}
+
+int check_for_jump_label(consth char * input_string)
+{
+  int start_iterator = 0;
+  char temp_string[30] = {0};
+
+  for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != 9; ++start_iterator);
+
+
+  // If we started on a space or a tab
+  // Need to return from the function
+  if (start_iterator == 0)
+    {
+      return -1
+    }
+
+  else if (input_string[start_iterator] != ':')
+    {
+      fprintf(stderr, "Failure assembling the line. Label expected but not denoted properly");
+      assert(0 ==1);
+    }
+
+  else
+    {
+      return start_iterator;
+    }
+
   
 }
 
@@ -116,18 +147,24 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
   size_t line_length = fill_string_with_line(250, input_string, file_in);
   enum section_types type = check_for_section_label(input_string);
 
-  if (type == invalid_section_label)
+  if (type != text && type != none )
     {
       fprintf(stderr, "Invalid section label");
       assert(0 == 1);
     }
+  // text assumed
+  // if we get type of text then just return as nothing else will be on the line
+  else if (type == text)
+    {
+      return;
+    }
+  // Must be no label
+  
+  int start_iterator = check_for_jump_label(const char *input_string);
 
+  if (start_iterator)
+  
   // Make sure that everything is part of the text section
-  
-
-  
-
-
 }
   
   
@@ -203,7 +240,7 @@ int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array)
 
 
 
- inline int check_for_offset(char * string, int *start_parentheses, int *disp_value)
+inline int check_for_offset(char * string, int *start_parentheses, int *disp_value)
 {
   // Should return the number of bytes for the offset
   // Modified should be the index at which the parentheses start
@@ -302,8 +339,7 @@ sib_pieces sib_from_string(char *sib_instruction_in)
 void check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep)
 {
   /* Now some requirements for instructions will be listed
-     - < 2 memory operands 
-     - No direction in ModRM, rather in the instruction  
+     - < 2 memory operands
     - < 2 immediates
      - If a dependency check fails for a mnemonic, try one of the nearest ones. Likely, lots of them will fail as of now
    */

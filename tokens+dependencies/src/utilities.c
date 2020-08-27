@@ -2,6 +2,8 @@
 #include "../include/customtypes.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 
 inline int move_to_endline(const char * input_string, int start_iterator)
 {
@@ -225,8 +227,9 @@ void fill_possible_sizes(struct available_sizes *sizes_in, char * instruction_in
   
   for (int i = 0; i < 4; ++i)
     {
-      switch_on_possible_sizes(array[i], sizes_in)
+      switch_on_possible_sizes(array[i], sizes_in);
     }
+
   
   
 }

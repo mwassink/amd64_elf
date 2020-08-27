@@ -6,7 +6,7 @@ enum Basic_Operands {none, immediate, memory, reg, sib, mem_or_reg, mm, xmm, sta
 		     flag, empty, rflags, memory_offset, relative_offset, push_or_pop, xmm_or_mem, rax,
                      eflags, rel, not_found};
 
-enum section_types {text, bss, data, invalid_section_label};
+enum section_types {none, text, bss, data, invalid_section_label};
 // These are necessary for the instruction, given the mnemonic or the ID
 
 
@@ -145,7 +145,42 @@ struct memory_op_info
   bool is_mem;
 };
 
+struct symbols_in
+{
+  int current_line;
+  int current_label;
+  int current_instruction_number;
+  int * jump_instructions; // lines that have labels
+  char ** string_for_jumps; // Must correspond to the jump table exactly
 
+  // NOT COMPLETE
+
+
+};
+
+struct Elf64_Sym
+{
+  unsigned int st_name;
+  unsigned char st_info;
+  unsigned char st_other;
+  short unsigned int st_shndx;
+  long unsigned int st_value; // where does this start?
+  long unsigned int st_size; // how big is this?
+
+
+  
+};
+
+struct label_info
+{
+  int bytes;
+  int written_before;
+  char *string_name; // For linking later
+  // visibility??
+  // function info??
+  
+  
+};
 
 
 #endif
