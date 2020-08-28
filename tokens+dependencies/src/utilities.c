@@ -631,6 +631,14 @@ int check_for_lock_prefix(const char * string, int *start_index)
     }
 }
 
+inline int fill_string_until_character(const char *input_string, char *target, int start_iterator, char condition)
+{
+  for (int iterator = 0; input_string[start_iterator] != condition; ++start_iterator)
+    {
+      target[iterator] = input_string[start_iterator];
+    }
+  return start_iterator;
+}
 
 
 

@@ -9,6 +9,7 @@ enum Basic_Operands {none, immediate, memory, reg, sib, mem_or_reg, mm, xmm, sta
 enum section_types {none, text, bss, data, invalid_section_label};
 // These are necessary for the instruction, given the mnemonic or the ID
 
+enum Sections {_text, _bss, data};
 
 
 struct available_sizes
@@ -145,14 +146,15 @@ struct memory_op_info
   bool is_mem;
 };
 
-struct symbols_in
+struct symbols_information
 {
   int current_line;
   int current_label;
   int current_instruction_number;
   int * jump_instructions; // lines that have labels
   char ** string_for_jumps; // Must correspond to the jump table exactly
-
+  int * lengths_labels;
+  bool _start_found; // entry into the program
   // NOT COMPLETE
 
 

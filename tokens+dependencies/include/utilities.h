@@ -8,6 +8,7 @@ void print_binary(unsigned long int input_number);
 long unsigned int  name_to_id( char * mnemonic);
 inline int move_to_space (const char * input_string, int start_iterator);
 inline int move_to_endline(const char * input_string, int start_iterator);
+inline int move_while_general(const char * input_string, int start_iterator, char general_char);
 void switch_on_possible_sizes(int in, struct available_sizes *sizes_in);
 void fill_possible_sizes(struct available_sizes *sizes_in, char * instruction_in);
 int * possible_sizes(char * available_operands_in);
@@ -16,5 +17,6 @@ bool check_for_segment_register(char *reg);
 enum Basic_Operands type_fallback(const char * in);
 enum Basic_Operands operand_type_return(const char *in);
 int fill_string_with_line(int max_size, char * string, FILE *fptr);
+int fill_string_until_condition(const char *input_string, char *target, int start_iterator, char condition);
 #endif
 

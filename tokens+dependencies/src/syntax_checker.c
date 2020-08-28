@@ -2,19 +2,21 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <string.h>
 #include "../include/sib.h"
 #include <math.h>
 #include "../include/customtypes.h"
 #include "../include/get_instructions.h"
 #include "../include/syntax_checker.h"
 #include "../include/utilities.h"
+#include "../include/symbols.h"
 
 
 // This file needs to go through line by line and check for tokens. It will just look for whitespace and endlines
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
-typedef struct memory_op_info regular_memory_operand;
-typedef struct sib sib_pieces;
+
+
 
 bool check_sizes(int size_in, struct available_sizes available)
 {
@@ -137,13 +139,21 @@ int ascii_to_int( char * in, int *returned_index)
   return sum;
 }
 
-void search_line(FILE * file_in, struct instruction_pieces *arguments, enum section_types current_type)
+void search_line(FILE * file_in, struct instruction_pieces *arguments, enum section_types current_type, struct symbols_information *symbols)
 {
+
+    symbols->current_line++;
+    
   // The fp has information on where in the file we are, this assumes that we
   // are at the beginning of the line and that the file is opened already
   // If the beginning of the line is not a space then it should be a label
+
+    
   int line_iterator = 0;
   char input_string[250] = {0};// Allocate 250 bytes for the string
+  char *mnemonic = (char *)malloc(15); // 15 bytes for the future mnemonic
+  memset(mnemonic, 0, 15);
+  
   size_t line_length = fill_string_with_line(250, input_string, file_in);
   enum section_types type = check_for_section_label(input_string);
 
@@ -159,12 +169,41 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
       return;
     }
   // Must be no label
-  
+  symbols->current_instruction_number++;
   int start_iterator = check_for_jump_label(const char *input_string);
 
-  if (start_iterator)
+
+  
+  if (start_iterator) // the start iterator is not zero, label found
+    {
+      symbols->current_label++;
+      // Make sure to copy this string, and terminate it at the start_iterator
+      add_function_to_symbols(symbols); // the line, label, instruction are updated when this is called
+    }
+
+  move_while_general(input_string, start_iterator, ' '); // Mnemonic comes next, hopefully
+  start_iterator = fill_string_until_condition(input_string, mnemonic, start_iterator, ' '); // Fill the mnemonic string
+  start_iterator = move_while_general(input_string, start_iterator, ' ');
+  
+  arguments->op1 = user_string_to_operand(input_string, start_iterator); // This does not move the start iterator
+  arguments->op1_mnemonic = copy_until_space(input_string + start_iterator);
+  
+  start_iterator = move_to_general(input_string,start_iterator, ' '); // move to the next space
+  start_iterator = move_to_general(input_string, start_iterator, ','); // move to the next comma
+  start_iterator = move_while_general(input_string, start_iterator, ' '); // move to the next operand
+  
+  arguments->op2 = user_string_to_operand(input_string, start_iterator);
+  arguments->op2 = copy_until_space(input_string + start_iterator);
+  
+
+
   
   // Make sure that everything is part of the text section
+
+
+
+
+  
 }
   
   
@@ -484,8 +523,11 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
 }
 
  
-enum Basic_Operands user_string_to_operand(const char *string_in, int start_index, struct memory_op_info *in_case)
+enum Basic_Operands user_string_to_operand(const char *string_in, int start_index)
 {
+  // CAN RETURN: sib, memory, register, immediate 
+
+  
   // Needs to be called after the offset is checked for
   
   int initial_start = start_index;
