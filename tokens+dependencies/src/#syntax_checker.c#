@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
@@ -586,6 +586,7 @@ int write_instructions (struct instruction_definition *def_for_writing, union op
   switch(def_for_writing->requirements.one)
     {
     case immediate:
+      
       
     }
 }

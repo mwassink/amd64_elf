@@ -2,7 +2,7 @@
 #define CUSTOMTYPES_H
 #include <stdbool.h>
 
-enum Basic_Operands {none, immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment, implied_reg,
+enum Basic_Operands {no_operand, immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment, implied_reg,
 		     flag, empty, rflags, memory_offset, relative_offset, push_or_pop, xmm_or_mem, rax,
                      eflags, rel, not_found};
 
@@ -77,6 +77,7 @@ struct instruction_definition
   char opcode; // necessary for writing the opcode into the file
   char secondary_opcode; // Necessary if this is included
   char prefix_OF; // Don't do a bool just the prefix
+  bool long_mnemonic;
 
 
 };
@@ -184,5 +185,14 @@ struct label_info
   
 };
 
+union operand_types
+{
+  struct sib sib_op;
+  struct memory_op_info mem_op;
+  long unsigned int immediatelong;
+  unsigned int immediate;
+  short unsigned int immediateshort;
+  char reg_string[8];
+};
 
 #endif
