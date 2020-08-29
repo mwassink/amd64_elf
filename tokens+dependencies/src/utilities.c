@@ -640,5 +640,60 @@ inline int fill_string_until_character(const char *input_string, char *target, i
   return start_iterator;
 }
 
+int byte_from_prefixes(union operand_types op1, union operand_types op2, enum Basic_Operands type1,
+				 enum Basic_Operands type2, unsigned char * write_spot)
+{
+  // if 32 bits are used to address, then the bit 67 will precede the other prefix
+  // There is at most 1 byte that's
+  // the register is always the more important instruction
+  // for the second instruction down there, coder64 would have %eax as op1
+  // 10 ----> (%rax), %edx     45 ------->" -0x04(%rbp) <-----op2, %eax <---op1"
+
+  char w = 0;// 0x08; 64 bit operand size, does not apply to memory as we usually do not use those to address
+  char r = 0;//0x04; extension of modR/M reg field. This gives the new registers
+  char x = 0; //0x02; extension of the SIB index field. probably one of the new registers 
+  char b = 0;//1; extension of the r/m field, base field or opcode reg field 
+
+  // int direction = INSTRUCTION & 2; if this returns true then we know that op1 was for sure a reg where
+  // op2 was r/m. op2 would be less significant
+  int iterator = 0;
+
+  if (type1 == memory)
+    {
+      int start_reg_1 = op1.mem_op.first_paren_offset;
+      start_reg_1 = move_while_general(op1.mem_op.string, start_reg_1 + 1, ' '); // need to make sure that this returns something
+    }
+  
+  if (type2 == memory)
+    {
+      int start_reg_2 = op2.mem_op.first_paren_offset;
+      start_reg_2 = move_while_general(op2.mem_op.string, start_reg_2 + 1, ' ');
+      // need to make sure that this returns something
+    }
+  
+  
+  switch (type1)// the furthest right with the AT&T syntax, the TARGET
+    {
+    case memory: // default for the target memory to be 64 bit
+      if (op1.mem_op.string[start_reg_1] == 'e')
+	write_spot[iterator++] = 0x67;
+      break;
+    case reg:
+      if (op1.reg_string[0] == 'r')
+	w = 0x08;
+      break;
+    }
+
+  switch (type2)
+    {
+    case memory:
+      if (op2. == 'r'')
+    }
+
+  
+  
+}
+
+
 
 

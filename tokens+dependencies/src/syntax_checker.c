@@ -185,15 +185,15 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
   start_iterator = fill_string_until_condition(input_string, mnemonic, start_iterator, ' '); // Fill the mnemonic string
   start_iterator = move_while_general(input_string, start_iterator, ' ');
   
-  arguments->op1 = user_string_to_operand(input_string, start_iterator); // This does not move the start iterator
-  arguments->op1_mnemonic = copy_until_space(input_string + start_iterator);
+  arguments->op2 = user_string_to_operand(input_string, start_iterator); // This does not move the start iterator
+  arguments->op2_mnemonic = copy_until_space(input_string + start_iterator);
   
   start_iterator = move_to_general(input_string,start_iterator, ' '); // move to the next space
   start_iterator = move_to_general(input_string, start_iterator, ','); // move to the next comma
   start_iterator = move_while_general(input_string, start_iterator, ' '); // move to the next operand
   
-  arguments->op2 = user_string_to_operand(input_string, start_iterator);
-  arguments->op2_mnemonic = copy_until_space(input_string + start_iterator);
+  arguments->op1 = user_string_to_operand(input_string, start_iterator);
+  arguments->op1_mnemonic = copy_until_space(input_string + start_iterator);
 
   arguments->instruction_mnemonic = mnemonic;
   arguments->instruction = name_to_id(mnemonic);
@@ -579,15 +579,20 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
   
 }
 
-int write_instructions (struct instruction_definition *def_for_writing, union operand_types op1, union operand_types op2)
+int write_instructions (struct instruction_definition *def_for_writing, union operand_types op1, union operand_types op2, byte * write_array)
 {
   // union works as a genral purpose because the definition defines the operands, and these are already checked
 
-  switch(def_for_writing->requirements.one)
-    {
-    case immediate:
-      
-    }
+  // Need to check for prefixes first
+  // function that writes a byte based on the prefixes
+
+
+
+
+
+  
 }
+
+
 
 

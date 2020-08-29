@@ -140,7 +140,8 @@ struct instruction_pieces
 
 struct memory_op_info
 {
-  // Regular memory 
+  // Regular memory
+  char *string;
   int first_paren_offset; // This tells how far along the operand string (like 10(%rax)) ther first parenthese is
   int disp_length;
   unsigned int disp;
