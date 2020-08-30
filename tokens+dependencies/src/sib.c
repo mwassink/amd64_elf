@@ -3,7 +3,7 @@
 #include "../include/modrm.h"
 #include <assert.h>
 #include "../include/sib.h"
-
+#include <stdbool.h>
 // Example with the sib indexing
 
 // This is used for addressing between registers
@@ -49,20 +49,23 @@
 
 
 
-inline bool sib_reg_string_compare (char  * in, char  * in2) // before, just cast the address to one of type int, compiler will know what to do 
+inline bool sib_reg_string_compare (char  * in, char  * in2, bool long_check) // before, just cast the address to one of type int, compiler will know what to do 
 {
     int* lhs = (int*)in;
     int* rhs = (int*)in2;
     // Mask the last bit if it is a ), this would mean it would have length 3
     // By masking the last bit, I know that a comparison against a null character will work
     // However, other ones might need this
-    if (((*in) & 0x000000FF) == ')')
+    if (long_check)
     {
-        *lhs &= 0xFFFFFF00; // Not a big deal if the memory is altered 
-        return *lhs = *rhs;
+      for (int i = 0; i <3; ++i)
+	{
+	  if (in[i] != in2[i])
+	    return false;
+	}
     }
     else
-        return *lhs = *rhs;
+        return *lhs == *rhs;
 }
 
 // NOTE: I have to decide whether to process the whole instruction at once or to put it into a struct and operate on it 
@@ -76,36 +79,36 @@ inline bool sib_reg_string_compare (char  * in, char  * in2) // before, just cas
 
 int sib_rexr_table_base(char * in, int mod) // THe mod should be known for the r13 
 {
-    if (sib_reg_string_compare(in, "%r8") || sib_reg_string_compare(in, "%r8d"))
+  if (sib_reg_string_compare(in, "%r8", 1) || sib_reg_string_compare(in, "%r8d", 0))
         return 0;
 
-    else if (sib_reg_string_compare(in, "%r9") || sib_reg_string_compare(in, "%r9d"))
+  else if (sib_reg_string_compare(in, "%r9", 1) || sib_reg_string_compare(in, "%r9d", 0))
         return 1;
 
-    else if (sib_reg_string_compare(in, "%r10"))
+  else if (sib_reg_string_compare(in, "%r10", 0))
         return 2;
 
-    else if (sib_reg_string_compare(in, "%r11"))
+  else if (sib_reg_string_compare(in, "%r11", 0))
         return 3;
 
-    else if (sib_reg_string_compare(in, "%r12"))
+  else if (sib_reg_string_compare(in, "%r12", 0))
         return 4;
 
-    else if (sib_reg_string_compare(in, "%r13"))
+  else if (sib_reg_string_compare(in, "%r13", 0))
     {
-        if (mod == 0)
+      if (mod == 0)
         {
-            fprintf(stderr, "R13 cannot be used as a base with 0 displacement");
-            assert(0 == 1);
+	  fprintf(stderr, "R13 cannot be used as a base with 0 displacement");
+	  assert(0 == 1);
 
         }
         else
             return 5;
     }
-    else if (sib_reg_string_compare(in, "%r14"))
+  else if (sib_reg_string_compare(in, "%r14", 0))
         return 6;
 
-    else if (sib_reg_string_compare(in, "%r15"))
+  else if (sib_reg_string_compare(in, "%r15", 0))
         return 7;
 
     else
@@ -117,22 +120,22 @@ int sib_rexr_table_base(char * in, int mod) // THe mod should be known for the r
 }
 int sib_regular_table_base(char* in, int mod)
 {
-    if (sib_reg_string_compare(in, "%rax"))
+  if (sib_reg_string_compare(in, "%rax", 0))
         return 0;
 
-    else if (sib_reg_string_compare(in, "%rcx"))
+  else if (sib_reg_string_compare(in, "%rcx", 0))
         return 1;
 
-    else if (sib_reg_string_compare(in, "%rdx"))
+  else if (sib_reg_string_compare(in, "%rdx", 0))
         return 2;
 
-    else if (sib_reg_string_compare(in, "%rbx"))
+  else if (sib_reg_string_compare(in, "%rbx", 0))
         return 3;
 
-    else if (sib_reg_string_compare(in, "%rsp"))
+  else if (sib_reg_string_compare(in, "%rsp", 0))
         return 4;
 
-    else if (sib_reg_string_compare(in, "%rbp"))
+  else if (sib_reg_string_compare(in, "%rbp", 0))
     {
         if (mod == 0)
         {
@@ -144,10 +147,10 @@ int sib_regular_table_base(char* in, int mod)
             return 5;
     }
 
-    else if (sib_reg_string_compare(in, "%rsi"))
+  else if (sib_reg_string_compare(in, "%rsi", 0))
         return 6;
 
-    else if (sib_reg_string_compare(in, "%rdi"))
+  else if (sib_reg_string_compare(in, "%rdi", 0))
         return 7;
 
     else
@@ -159,28 +162,28 @@ int sib_regular_table_base(char* in, int mod)
 
 int sib_rexr_table_index(char* in, int mod)
 {
-    if (sib_reg_string_compare(in, "%r8") || sib_reg_string_compare(in, "%r8d"))
+  if (sib_reg_string_compare(in, "%r8", 1) || sib_reg_string_compare(in, "%r8d", 0))
         return 0;
 
-    else if (sib_reg_string_compare(in, "%r9") || sib_reg_string_compare(in, "%r9d"))
+  else if (sib_reg_string_compare(in, "%r9", 1) || sib_reg_string_compare(in, "%r9d", 0))
         return 1;
 
-    else if (sib_reg_string_compare(in, "%r10"))
+  else if (sib_reg_string_compare(in, "%r10", 0))
         return 2;
 
-    else if (sib_reg_string_compare(in, "%r11"))
+  else if (sib_reg_string_compare(in, "%r11", 0))
         return 3;
 
-    else if (sib_reg_string_compare(in, "%r12"))
+  else if (sib_reg_string_compare(in, "%r12", 0))
         return 4;
 
-    else if (sib_reg_string_compare(in, "%r13"))
+  else if (sib_reg_string_compare(in, "%r13", 0))
         return 5;
 
-    else if (sib_reg_string_compare(in, "%r14"))
+  else if (sib_reg_string_compare(in, "%r14", 0))
         return 6;
 
-    else if (sib_reg_string_compare(in, "%r15"))
+  else if (sib_reg_string_compare(in, "%r15", 0))
         return 7;
 
     else
@@ -192,25 +195,25 @@ int sib_rexr_table_index(char* in, int mod)
 
 int sib_regular_table_index(char* in, int mod)
 {
-    if (sib_reg_string_compare(in, "%rax"))
+  if (sib_reg_string_compare(in, "%rax", 0))
         return 0;
 
-    else if (sib_reg_string_compare(in, "%rcx"))
+  else if (sib_reg_string_compare(in, "%rcx", 0))
         return 1;
 
-    else if (sib_reg_string_compare(in, "%rdx"))
+  else if (sib_reg_string_compare(in, "%rdx", 0))
         return 2;
 
-    else if (sib_reg_string_compare(in, "%rbx"))
+  else if (sib_reg_string_compare(in, "%rbx", 0))
         return 3;
 
-    else if (sib_reg_string_compare(in, "%rbp"))
+  else if (sib_reg_string_compare(in, "%rbp", 0))
         return 5;
 
-    else if (sib_reg_string_compare(in, "%rsi"))
+  else if (sib_reg_string_compare(in, "%rsi", 0))
         return 6;
 
-    else if (sib_reg_string_compare(in, "%rdi"))
+  else if (sib_reg_string_compare(in, "%rdi", 0))
         return 7;
 
     else

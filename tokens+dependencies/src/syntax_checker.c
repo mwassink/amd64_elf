@@ -276,7 +276,7 @@ int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array)
 
 
 
-inline int check_for_offset(char * string, int *start_parentheses, int *disp_value)
+int check_for_offset(char * string, int *start_parentheses, int *disp_value)
 {
   // Should return the number of bytes for the offset
   // Modified should be the index at which the parentheses start
@@ -311,13 +311,13 @@ inline int check_for_offset(char * string, int *start_parentheses, int *disp_val
     {
       // This is just a decimal offset
       *disp_value = ascii_to_int(string, start_parentheses);
-      if (*disp_value> 255)
-	{
-	  return 1;
-	}
+      if (*disp_value < 255)
+	    {
+	      return 1;
+	    }
 
       else
-	return 4;    
+	      return 4;    
     }
   
   else

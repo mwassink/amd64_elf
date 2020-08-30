@@ -728,7 +728,7 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
   switch (type1)// the furthest right with the AT&T syntax, the TARGET
     {
     case memory: // default for the target memory to be 64 bit
-      if (op1.mem_op.string[start_reg_1] == 'e')
+      if (op1.mem_op.string[start_reg_1] == 'e' || (needs_rex_r(op1.mem_op.string + start_reg_1) && op1.mem_op.string[start_reg_1 + 3] == 'd'))
 	write_spot[iterator++] = 0x67;
       break;
     case reg:
@@ -747,7 +747,7 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
   switch (type2)
     {
     case memory:
-      if (op2.mem_op.string[start_reg_2] == 'r')
+      if (op2.mem_op.string[start_reg_2] == 'r' || (needs_rex_r(op2.mem_op.string + start_reg_1) && op2.mem_op.string[start_reg_1 + 3] == 'd'))
 	{
 	  if (iterator > 0)
 	    {

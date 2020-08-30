@@ -18,7 +18,7 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
 int binary_lookup(unsigned  int in, unsigned  int* array_in);
 int rip_suffix(char *instruction_mnemonic, int depth);
 int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array);
-inline int check_for_offset(char * string, int *start_parentheses, int *disp_value);
+int check_for_offset(char * string, int *start_parentheses, int *disp_value);
 regular_memory_operand construct_memory_operand(char * memory_instruction_in);
 sib_pieces construct_sib_from_string(char *sib_instruction_in);
 void check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep);
