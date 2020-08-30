@@ -13,7 +13,7 @@ int instructions_counted = 0;
 int dependencies_filled = 0;
 
 
-void fill_dependencies ( struct instruction_format *instr_format, struct dependencies * deps)
+bool fill_dependencies ( struct instruction_format *instr_format, struct dependencies * deps)
 {
   // May need to be changed if it does not work 
   // Start comparing the strings with the above function
@@ -21,12 +21,23 @@ void fill_dependencies ( struct instruction_format *instr_format, struct depende
  
   deps->one = operand_type_return(instr_format->op1);
   deps->two = operand_type_return(instr_format->op2);
-  
+
+  if (deps->one == not_found)
+    {
+      return 1;
+    }
+  else if (deps->two == not_found)
+    {
+      return 1;
+    }
   
 
 
   fill_possible_sizes(&deps->allowed_sizes, instr_format->op1);
   fill_possible_sizes(&deps->allowed_sizes, instr_format->op2);
+
+
+  return 0;
 }
 
 
@@ -46,10 +57,11 @@ void convert_instruction(struct instruction_definition *definition, struct instr
       definition->requirements.lockable = 0;
     }
 
-  fill_dependencies(format, &definition->requirements);
+  definition->not_supported = fill_dependencies(format, &definition->requirements);
   definition->prefix = format->prefix;
   definition->requirements.highest_ring = format->ring_level;
   definition->prefix_OF = format->prefix_OF;
+  
   
 
   
@@ -61,7 +73,7 @@ void write_new_definitions(struct instruction_definition *definitions, int num_f
 {
   // Need to write the new definitions to a file as they are processed
   struct instruction_definition for_size;
-  FILE * fp = fopen("converted_instructions.txt", "wb");
+  FILE * fp = fopen("converted_instructions.bin", "wb");
 
   if (!fp)
     {
@@ -78,15 +90,14 @@ void write_new_definitions(struct instruction_definition *definitions, int num_f
       missing_instruction = 0;
       convert_instruction(definitions + i, format + i);
 
-      if (definitions[i].requirements.max_size == 0)
+      if (definitions[i].not_supported == 1)
 	{
-	  // Operand type was not found
-	  missing_instruction++; // Can be used as a breakpoint
 	  
 	}
-
       
       size_t written = fwrite(definitions + i, sizeof(for_size), 1, fp );
+
+      
       if (written != 1)
 	{
 	  fprintf(stderr, "Failure to write the binary to a new file");

@@ -5,13 +5,21 @@
 #include <stdlib.h>
 
 
-inline int move_to_endline(const char * input_string, int start_iterator)
+
+
+
+bool needs_rex_r(const char *input)
+{
+  return (input[2] > 47 && input[2] < 58);
+}
+
+int move_to_endline(const char * input_string, int start_iterator)
 {
   for (; input_string[start_iterator] != '\n'; ++start_iterator);
   return start_iterator;
 }
 
-inline int move_to_space (const char * input_string, int start_iterator)
+int move_to_space (const char * input_string, int start_iterator)
 {
   for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != '\n'; ++start_iterator);
 
@@ -27,16 +35,53 @@ inline int move_to_space (const char * input_string, int start_iterator)
 }
 
 
-inline int move_to_general(const char * input_string, int start_iterator, char general_char)
+void byte_from_sib_part(const char * in, prefixes *prefix)
 {
-  for (; input_string[start_iterator] != general_char; ++start_iterator);
-  return start_iterator;
+  // First look for the first register
+  // if the 32 bit registers are used for the sib, then 67 will prefix the whole instruction
+  // W not needed because SIB is only used for the addressing and not the register size
+  
+  
+  
+  
+  int start_iterator = 0;
+  start_iterator = move_to_general(in,  start_iterator, '%'); start_iterator++; // Now in the right spot for the BASE
+  if (in[start_iterator] == 'e')
+    {
+      prefix->addressing_67_prefix = 0x67;
+    }
+  else if (needs_rex_r(in + start_iterator))
+    {
+      prefix->flags |= 0x41; // for the prefix
+    }
+  start_iterator = move_to_general(in, start_iterator, '%'); // this will follow the size of the other. This is now the size of the index
+  if (needs_rex_r(in+ start_iterator))
+    {
+      prefix->flags |= 0x42; // for the index of this
+    }
+
+  
 }
 
 
 
 
-bool compare_strings(char * lhs, char * rhs)
+
+
+int move_to_general(const char * input_string, int start_iterator, char general_char)
+{
+  for (; input_string[start_iterator] != general_char; ++start_iterator);
+  return start_iterator;
+}
+
+int move_while_general(const char * input_string, int start_iterator , char general_char)
+{
+  for (; input_string[start_iterator] == general_char; ++start_iterator);
+  return start_iterator;
+}
+
+
+bool compare_strings(char * lhs, const char * rhs)
 {
   int max_length = 20;
   int iterator = 0;
@@ -130,7 +175,7 @@ int * possible_sizes(char * available_operands_in)
   char one[5] = {0}; char two[5] = {0}; char three[5] = {0};
   char four[5] = {0}; 
   //Start when the character is an ascii character
-  int i = 0; int one_length = 0; int two_length = 0; int three_length = 0; int four_length = 0; int five_length = 0;
+  int i = 0; int one_length = 0; int two_length = 0; int three_length = 0; int four_length = 0; 
 
   
   for (; available_operands_in[i] < 48 && available_operands_in[i] > 57; ++i) // Jump to number
@@ -184,7 +229,7 @@ int * possible_sizes(char * available_operands_in)
       four[four_length++] = available_operands_in[i];
     }
 
-   sizes[0] = atoi(one); size[1] = atoi(two); size[2] = atoi(three); size[3] = atoi(four);
+   sizes[0] = atoi(one); sizes[1] = atoi(two); sizes[2] = atoi(three); sizes[3] = atoi(four);
 						
    
   return sizes;
@@ -219,7 +264,7 @@ void switch_on_possible_sizes(int in, struct available_sizes *sizes_in)
 
 void fill_possible_sizes(struct available_sizes *sizes_in, char * instruction_in)
 {
-  int iterator = 0;
+  
   sizes_in->one_byte = 0; sizes_in->byte_high = 0; sizes_in->byte_16 = 0;
   sizes_in->byte_2 = 0; sizes_in->byte_4 = 0; sizes_in->byte_8 = 0;
 
@@ -371,7 +416,7 @@ enum Basic_Operands type_fallback(const char * in)
   
 }
 
-enum Basic_Operands operand_type_return(const char *in)
+enum Basic_Operands operand_type_return(char *in)
 {
   // Read until a size, a slash or a 0
    if (compare_strings(in, "imm8"))
@@ -506,7 +551,7 @@ enum Basic_Operands operand_type_return(const char *in)
    else if (compare_strings(in, "mm"))
      {
 
-       return = mm;
+       return  mm;
      }
    else if (compare_strings(in, "rel8"))
      {
@@ -565,7 +610,7 @@ int check_for_jump_label(const char *string_in, char *replaced, int *current_spo
 }
 
 
-int numbits_from_suffix(const char * instruction_at_suffix)
+int numbits_from_suffix( char * instruction_at_suffix)
 {
   if (instruction_at_suffix[0] == 'd')
     {
@@ -611,11 +656,16 @@ int numbits_from_suffix(const char * instruction_at_suffix)
     {
       return 128;
     }
+  else
+    {
+      fprintf(stdout, "Defaulting to 64 bit with no prefix given");
+      return 64;
+    }
 
   
 }
 
-int check_for_lock_prefix(const char * string, int *start_index)
+int check_for_lock_prefix( char * string, int *start_index)
 {
 
 
@@ -631,7 +681,8 @@ int check_for_lock_prefix(const char * string, int *start_index)
     }
 }
 
-inline int fill_string_until_character(const char *input_string, char *target, int start_iterator, char condition)
+// I want to inline this function. may put it into a header file with just inlined functions
+int fill_string_until_character(const char *input_string, char *target, int start_iterator, char condition)
 {
   for (int iterator = 0; input_string[start_iterator] != condition; ++start_iterator)
     {
@@ -640,7 +691,7 @@ inline int fill_string_until_character(const char *input_string, char *target, i
   return start_iterator;
 }
 
-int byte_from_prefixes(union operand_types op1, union operand_types op2, enum Basic_Operands type1,
+prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, enum Basic_Operands type1,
 				 enum Basic_Operands type2, unsigned char * write_spot)
 {
   // if 32 bits are used to address, then the bit 67 will precede the other prefix
@@ -649,28 +700,30 @@ int byte_from_prefixes(union operand_types op1, union operand_types op2, enum Ba
   // for the second instruction down there, coder64 would have %eax as op1
   // 10 ----> (%rax), %edx     45 ------->" -0x04(%rbp) <-----op2, %eax <---op1"
 
-  char w = 0;// 0x08; 64 bit operand size, does not apply to memory as we usually do not use those to address
-  char r = 0;//0x04; extension of modR/M reg field. This gives the new registers
-  char x = 0; //0x02; extension of the SIB index field. probably one of the new registers 
-  char b = 0;//1; extension of the r/m field, base field or opcode reg field 
+ 
 
   // int direction = INSTRUCTION & 2; if this returns true then we know that op1 was for sure a reg where
   // op2 was r/m. op2 would be less significant
   int iterator = 0;
-
+  int start_reg_1 = 0;
+  int start_reg_2 = 0;
   if (type1 == memory)
     {
-      int start_reg_1 = op1.mem_op.first_paren_offset;
+      start_reg_1 = op1.mem_op.first_paren_offset;
       start_reg_1 = move_while_general(op1.mem_op.string, start_reg_1 + 1, ' '); // need to make sure that this returns something
     }
   
   if (type2 == memory)
     {
-      int start_reg_2 = op2.mem_op.first_paren_offset;
+       start_reg_2 = op2.mem_op.first_paren_offset;
       start_reg_2 = move_while_general(op2.mem_op.string, start_reg_2 + 1, ' ');
       // need to make sure that this returns something
     }
   
+
+  prefixes returned_prefix;
+  returned_prefix.flags = 0;
+  returned_prefix.addressing_67_prefix = 0;
   
   switch (type1)// the furthest right with the AT&T syntax, the TARGET
     {
@@ -680,17 +733,46 @@ int byte_from_prefixes(union operand_types op1, union operand_types op2, enum Ba
       break;
     case reg:
       if (op1.reg_string[0] == 'r')
-	w = 0x08;
+	returned_prefix.flags |= 0x48;
+      if (needs_rex_r(op1.mem_op.string))
+	returned_prefix.flags |= 0x44;
       break;
+    case sib: // hassle call the sib function
+      byte_from_sib_part(op1.sib_op.operand, &returned_prefix); // this will be in the right order
+      break;
+    default:
+      break; // for the compiler to stop
     }
 
   switch (type2)
     {
     case memory:
-      if (op2. == 'r'')
+      if (op2.mem_op.string[start_reg_2] == 'r')
+	{
+	  if (iterator > 0)
+	    {
+	      unsigned char temp = write_spot[0];
+	      write_spot[0] = 0x67;
+	      write_spot[1] = temp;
+	    }
+	}
+      break;
+    case reg:
+      if (op1.reg_string[0] == 'r')
+	{
+	  returned_prefix.flags |= 0x48;
+	}
+      if (needs_rex_r(op1.mem_op.string))
+	returned_prefix.flags |= 0x44;
+      break;
+    case sib: // this is fine now
+      byte_from_sib_part(op1.sib_op.operand, &returned_prefix);
+      break;
+    default:
+      break; // for the compiler to stop
     }
-
-  
+  // cast the struct to a character of bytes
+  return returned_prefix;
   
 }
 

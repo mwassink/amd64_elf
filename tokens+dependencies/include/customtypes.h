@@ -9,7 +9,7 @@ enum Basic_Operands {no_operand, immediate, memory, reg, sib, mem_or_reg, mm, xm
 enum section_types {none, text, bss, data, invalid_section_label};
 // These are necessary for the instruction, given the mnemonic or the ID
 
-enum Sections {_text, _bss, data};
+
 
 
 struct available_sizes
@@ -20,11 +20,13 @@ struct available_sizes
   bool byte_4;
   bool byte_8;
   bool byte_16;
+  bool none;
 };
 
 struct dependencies
 {
   // NEEDS INIT FUNCTION
+  // Not packed properly
   bool lockable; // Easy one to see. If there calls for a lock prefix, then look if a lock is allowed
   enum Basic_Operands one;
   enum Basic_Operands two;
@@ -78,6 +80,8 @@ struct instruction_definition
   char secondary_opcode; // Necessary if this is included
   char prefix_OF; // Don't do a bool just the prefix
   bool long_mnemonic;
+  bool not_supported;
+  
 
 
 };

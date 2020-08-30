@@ -164,12 +164,10 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
     }
   // text assumed
   // if we get type of text then just return as nothing else will be on the line
-  else if (type == text)
-    {
-      return;
-    }
+  
   // Must be no label
   symbols->current_instruction_number++;
+ 
   int start_iterator = check_for_jump_label( input_string);
 
 
@@ -328,7 +326,7 @@ inline int check_for_offset(char * string, int *start_parentheses, int *disp_val
 
       
 // Don't write yet, we need to know whether it is an sib,etc
-regular_memory_operand check_memory_operand(char * memory_instruction_in) // Should be a given that this is a memroy type
+regular_memory_operand construct_memory_operand(char * memory_instruction_in) // Should be a given that this is a memroy type
 {
    // Needs to check for an offset first
    // SIB -----> offset(base, index, scale)
@@ -340,7 +338,7 @@ regular_memory_operand check_memory_operand(char * memory_instruction_in) // Sho
    return mem_operand;
 }
 
-sib_pieces sib_from_string(char *sib_instruction_in)
+sib_pieces construct_sib_from_string(char *sib_instruction_in)
 {
   // This just does the whole sib, knowing that it is an sib
   sib_pieces sib_returned;
@@ -469,9 +467,9 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
       
       for (int iterator = 0; iterator < valid_neighbors_number; ++iterator)
         {
-          // NOT DONE YET
+      
 	  // Will use the dependencies check function for this one
-          if (assert_dependencies(in, &dep[(valid_neighbors[valid_neighbors_number])]));
+          if (assert_dependencies(in, &dep[(valid_neighbors[valid_neighbors_number])]))
 	  {
 	     return valid_neighbors_number; // THE TRUTH
 	  }
@@ -491,11 +489,35 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     - Pass the size check 
  
    */
+  
+  if (table_in->one == mem_or_reg)
+    {
+      if (user_in->op1 == mem)
+	table_in->one = mem;
+      else if (user_in->op1 == reg)
+	table_in->one = reg;
+      else
+	return 0;
+    }
+   if (table_in->two == mem_or_reg)
+    {
+      if (user_in->op2 == mem)
+	table_in->two = mem;
+      else if (user_in->op2 == reg)
+	table_in->two = reg;
+      else
+	return 0;
+    }
+  
+  
   if (user_in->wants_lock && !(table_in->lockable)) // Failure, return a zero
     {
       return 0;
     }
 
+  
+
+  
   if (user_in->op1 != table_in->one)
     {
       return 0;
@@ -506,7 +528,10 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
       return 0;
     }
 
-  if (!check_sizes(user_in->op1_size, table_in->allowed_sizes))
+
+
+  
+ sizes_check:  if (!check_sizes(user_in->op1_size, table_in->allowed_sizes))
     {
       return 0;
     }
