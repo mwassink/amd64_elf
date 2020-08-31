@@ -489,9 +489,15 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     - Pass the size check 
  
    */
+  bool mem_or_reg_1_changed = 0;
+  bool mem_or_reg_2_changed = 0;
+  bool mem_or_xmm_1_changed = 0;
+  bool mem_or_xmm_2_changed = 0;
+
   
   if (table_in->one == mem_or_reg)
     {
+      mem_or_reg_1_changed = 1;
       if (user_in->op1 == mem)
 	table_in->one = mem;
       else if (user_in->op1 == reg)
@@ -501,6 +507,7 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     }
    if (table_in->two == mem_or_reg)
     {
+      mem_or_reg_2_changed = 1;
       if (user_in->op2 == mem)
 	table_in->two = mem;
       else if (user_in->op2 == reg)
@@ -508,6 +515,28 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
       else
 	return 0;
     }
+
+   if (table_in->one == xmm_or_mem)
+     {
+       mem_or_xmm_1_changed = 1;
+       if (user_in->op1 == xmm)
+	 table_in->one = xmm;
+       else if (user_in->op1 == mem)
+	 table_in->one = mem;
+       else
+	 return 0;
+     }
+
+    if (table_in->two == xmm_or_mem)
+     {
+       mem_or_xmm_2_changed = 1;
+       if (user_in->op2 == xmm)
+	 table_in->two = xmm;
+       else if (user_in->op2 == mem)
+	 table_in->two = mem;
+       else
+	 return 0;
+     }
   
   
   if (user_in->wants_lock && !(table_in->lockable)) // Failure, return a zero
@@ -541,7 +570,15 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
       return 0;
     }
 
-  
+  if (mem_or_reg_1_changed)
+    table_in->one = mem_or_reg;
+  if (mem_or_reg_2_changed)
+    table_in->two = mem_or_reg;
+  if (mem_or_xmm_1_changed)
+    table_in->one = xmm_or_mem;
+  if (mem_or_xmm_2_changed)
+    table_in->two = xmm_or_mem;
+    
   
   return 1;
 }
@@ -586,7 +623,7 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
 
   else if (string_in[start_index] == '%')
     {
-      // NOT FINISHED
+      
       return type_fallback(string_in + start_index + 1);
     }
 
@@ -604,19 +641,7 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
   
 }
 
-int write_instructions (struct instruction_definition *def_for_writing, union operand_types op1, union operand_types op2, byte * write_array)
-{
-  // union works as a genral purpose because the definition defines the operands, and these are already checked
 
-  // Need to check for prefixes first
-  // function that writes a byte based on the prefixes
-
-
-
-
-
-  
-}
 
 
 

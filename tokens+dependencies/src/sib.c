@@ -45,6 +45,52 @@
 // Not all of them do though
 // rbp, specifally, does not exist as a base for the sib, neither does r13. This is just a disp32 for mod 00 along with the disp
 // rsp is fake for the index
+int switch_on_sib_scale(int scale )
+{
+  // could use log but that will have doubles and stuff
+  switch(scale)
+    {
+    case 1:
+      return 0;
+    case 2:
+      return 1;
+    case 4:
+      return 2;
+    case 8:
+      return 3;
+    }
+}
+
+
+unsigned char make_sib_byte(struct sib sib_operand)
+{
+  unsigned char to_be_returned = 0;
+
+  if (sib_operand.scale > 8)
+    sib_operand.scale -= 48;
+
+  
+  to_be_returned = switch_on_sib_scale(sib_operand.scale);
+  to_be_returned <<= 3; // make space for the next one
+
+  if (needs_rex_r(sib_operand.operand + sib_operand.index_index))
+    to_be_returned |= sib_rexr_table_index(sib_operand.operand + sib_operand.index_index);
+
+  else
+    to_be_returned |= sib_regular_table_index(sib_operand.operand + sib_operand.index_index);
+
+  to_be_returned <<= 3;
+  
+  if (needs_rex_r(sib_operand.operand + sib_operand.base_index))
+    to_be_returned |= sib_rexr_table_base(sib_operand.operand + sib_operand.base_index, sib_operand.disp_length_in_bytes);
+
+  else
+    to_be_returned |= sib_rexr_table_base(sib_operand.operand + sib_operand.base_index, sib_operand.disp_length_in_bytes);
+  
+  return to_be_returned;
+}
+
+
 
 
 
@@ -160,7 +206,7 @@ int sib_regular_table_base(char* in, int mod)
     }
 }
 
-int sib_rexr_table_index(char* in, int mod)
+int sib_rexr_table_index(char* in)
 {
   if (sib_reg_string_compare(in, "%r8", 1) || sib_reg_string_compare(in, "%r8d", 0))
         return 0;
@@ -193,7 +239,7 @@ int sib_rexr_table_index(char* in, int mod)
     }
 }
 
-int sib_regular_table_index(char* in, int mod)
+int sib_regular_table_index(char* in)
 {
   if (sib_reg_string_compare(in, "%rax", 0))
         return 0;
@@ -223,24 +269,6 @@ int sib_regular_table_index(char* in, int mod)
     }
 }
 
-struct sib_byte full_sib_instruction(struct sib* sib_in, int mod)
-{
-    struct sib_byte returned_value;
-    // First look at the given arguments
-    if (needs_rex_r(sib_in->base)) // Call the base rexr
-        returned_value.base = sib_rexr_table_base(sib_in->base, mod);
-    else
-        returned_value.base = sib_regular_table_base(sib_in->base, mod);
 
-    if (needs_rex_r(sib_in->index))
-        returned_value.index = sib_rexr_table_index(sib_in->index, mod);
-    else
-        returned_value.index = sib_regular_table_index(sib_in->index, mod);
-
-    returned_value.ss = sib_in->scale;
-
-    return returned_value;
-
-}
 
 
