@@ -776,7 +776,108 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
   
 }
 
+int sort_instruction_set(struct instruction_definition * definitions, struct instruction_format *formats)
+{
+  // quick sort the instructions with 0 at the bottom
 
+  
+  
+  // tag the definitions with long ops
+
+  int num_longs = 0;
+  int num_shorts = 0;
+
+  struct instruction_definition for_size;
+
+  
+  struct instruction_definition * longs = malloc(1074*sizeof(for_size));
+  struct instruction_definition * shorts = malloc(1074*sizeof(for_size));
+
+
+
+  for (int i = 0; i < 1074; ++i)
+    {
+      if (definitions[i].mnemonic == 0)
+	{
+          void *target = (void*)(longs + num_longs++);
+          void *src = (void*)(definitions + i);
+          memcpy(target, src, sizeof(for_size));
+          longs[num_longs - 1].mnemonic = name_to_id(formats[i].mnemonic + 8);
+	}
+      else
+	{
+          void * target = (void *)(shorts + num_shorts++);
+          void * src = (void *)(definitions + i);
+          memcpy(target, src, sizeof(for_size));
+	}
+    }
+  
+
+
+  assert((num_longs + num_shorts) == 1074);
+  
+
+  for (int i = 0; i < num_longs; ++i)
+    {
+      for (int j = 0; j < (num_longs - i - 1); ++j )
+	{
+	  if (longs[j].mnemonic > longs[j +1].mnemonic)
+	    {
+	      struct instruction_definition copy;
+              void *longs_plus_1 = (void *)(longs + 1 + j);
+              void *longs_plus_j = (void *)(longs + j);
+              memcpy(&copy, longs_plus_1, sizeof(copy)); // move the copy from the ahead one
+              memcpy(longs_plus_1, longs_plus_j, sizeof(copy)); // j + 1 is overwritten
+              memcpy(longs_plus_j, &copy, sizeof(copy));
+	    }
+	}
+    }
+
+  for (int i = 0; i < num_shorts; ++i)
+    {
+      for (int j = 0; j < (num_shorts - i - 1); ++j )
+	{
+	  if (shorts[j].mnemonic > shorts[j +1].mnemonic)
+	    {
+	      struct instruction_definition copy;
+              void *shorts_ahead = (void *)(shorts + j + 1);
+              void * shorts_regular = (void *)(shorts + j);
+
+
+              memcpy(&copy, shorts_ahead, sizeof(copy)); // move the copy from the ahead one
+              memcpy(shorts_ahead, shorts_regular, sizeof(copy)); // j + 1 is overwritten
+              memcpy(shorts_regular, &copy, sizeof(copy));
+	    }
+	}
+    }
+
+  // Now sort the other ones
+  for (int i = 0; i < num_longs; ++i)
+    {
+      struct instruction_definition copy;
+      void * defs_ptr = (void *)(definitions + i);
+      void *longs_ptr = (void *)(longs + i);
+      memcpy(defs_ptr, longs_ptr, sizeof(copy));
+    }
+
+  for (int i = 0; i < num_shorts; ++i)
+    {
+      struct instruction_definition copy;
+
+      void * defs_ptr = (void *)(definitions + i + num_longs);
+      void *shorts_ptr = (void *)(shorts + i);
+
+
+      memcpy(defs_ptr, shorts_ptr, sizeof(copy));
+    }
+
+
+
+  free(longs);
+  free(shorts);
+
+  return num_longs;
+}
 
 
 

@@ -34,6 +34,9 @@ int check_for_lock_prefix( char * string, int *start_index);
 int fill_string_until_character(const char *input_string, char *target, int start_iterator, char condition);
 prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, enum Basic_Operands type1,
 				   enum Basic_Operands type2, unsigned char * write_spot);
+int sort_instruction_set(struct instruction_definition *definition_array, struct instruction_format * formats);
+int move_while_general(const char * input_string, int start_iterator , char general_char);
+int fill_string_until_character(const char *input_string, char *target, int start_iterator, char condition);
 
 #endif
 

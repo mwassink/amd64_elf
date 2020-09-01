@@ -300,11 +300,7 @@ int write_instruction_opcode_from_line( unsigned char * instruction, struct inst
 	}
     }
 
-   
-   
-
-
-
+   return to_be_written;
    
 }
 
@@ -316,6 +312,7 @@ void writer( char * file_in)
   printf("Defaulting to .text as section if none given");
   char string[250] = {0};
 
+  // Construct file pointer to start reading the file 
   FILE * file_pointer = fopen(file_in, "r");
   
   while (file_pointer)

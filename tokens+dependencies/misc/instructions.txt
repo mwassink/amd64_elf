@@ -13,7 +13,7 @@
 ,,0C,,,,,,,,OR,AL,imm8,,,,,o..szapc,o..sz.pc,.....a..,o......c,Logical Inclusive OR
 ,,0D,,,,,,,,OR,rAX,imm16/32,,,,,o..szapc,o..sz.pc,.....a..,o......c,Logical Inclusive OR
 ,,0E,,,,,E,,,invalid,,,,,,,,,,,Invalid Instruction in 64-Bit Mode
-,,0F,,,,,,,,Two-byte Instructions,,,,,,,,,,,
+,,0F,,,,,,,,STUB,,,,,,,,,,,
 ,,10,,r,,,,,L,ADC,r/m8,r8,,,,.......c,o..szapc,o..szapc,,,Add with Carry
 ,,11,,r,,,,,L,ADC,r/m16/32/64,r16/32/64,,,,.......c,o..szapc,o..szapc,,,Add with Carry
 ,,12,,r,,,,,,ADC,r8,r/m8,,,,.......c,o..szapc,o..szapc,,,Add with Carry

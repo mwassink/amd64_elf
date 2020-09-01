@@ -90,10 +90,11 @@ void write_new_definitions(struct instruction_definition *definitions, int num_f
       missing_instruction = 0;
       convert_instruction(definitions + i, format + i);
 
-      if (definitions[i].not_supported == 1)
-	{
-	  
-	}
+    }
+
+  int num_longs = sort_instruction_set(definitions, format);
+  for (int i =0; i < 1074; ++i)
+    {
       
       size_t written = fwrite(definitions + i, sizeof(for_size), 1, fp );
 
@@ -106,6 +107,8 @@ void write_new_definitions(struct instruction_definition *definitions, int num_f
 
      
     }
+
+  printf("Number of longs: %d", num_longs);
 }
 
 

@@ -148,7 +148,7 @@ struct memory_op_info
   char *string;
   int first_paren_offset; // This tells how far along the operand string (like 10(%rax)) ther first parenthese is
   int disp_length;
-  unsigned int disp;
+  int disp;
   bool is_mem;
 };
 

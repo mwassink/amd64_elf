@@ -81,19 +81,19 @@ enum section_types check_for_section_label(const char * input_string, int * iter
   
 }
 
-int check_for_jump_label(consth char * input_string)
+int check_for_jump_label(const char * input_string, struct symbols_information *sym_info)
 {
   int start_iterator = 0;
-  char temp_string[30] = {0};
+  
 
   for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != 9; ++start_iterator);
-
+ 
 
   // If we started on a space or a tab
   // Need to return from the function
   if (start_iterator == 0)
     {
-      return -1
+      return -1;
     }
 
   else if (input_string[start_iterator] != ':')
@@ -104,22 +104,13 @@ int check_for_jump_label(consth char * input_string)
 
   else
     {
+      sym_info->current_label++;
       return start_iterator;
     }
 
   
 }
 
-
-void init_op_info(struct memory_op_info *in)
-{
-  in->disp_length = 0;
-  in->disp_offset = -1;
-  in->reg1_off = -1;
-  in->reg2_off = -1;
-  in->sib = 0;
-  in->sib_scale = 0;
-}
 
 
 
@@ -139,7 +130,7 @@ int ascii_to_int( char * in, int *returned_index)
   return sum;
 }
 
-void search_line(FILE * file_in, struct instruction_pieces *arguments, enum section_types current_type, struct symbols_information *symbols)
+int search_line(FILE * file_in, struct instruction_pieces *arguments, struct symbols_information *symbols)
 {
 
     symbols->current_line++;
@@ -155,7 +146,7 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
   memset(mnemonic, 0, 15);
   
   size_t line_length = fill_string_with_line(250, input_string, file_in);
-  enum section_types type = check_for_section_label(input_string);
+  enum section_types type = check_for_section_label(input_string, &line_iterator );
 
   if (type != text && type != none )
     {
@@ -164,11 +155,12 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
     }
   // text assumed
   // if we get type of text then just return as nothing else will be on the line
+  return 1;
   
   // Must be no label
   symbols->current_instruction_number++;
  
-  int start_iterator = check_for_jump_label( input_string);
+  int start_iterator = check_for_jump_label( input_string, symbols);
 
 
   
@@ -176,11 +168,11 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
     {
       symbols->current_label++;
       // Make sure to copy this string, and terminate it at the start_iterator
-      add_function_to_symbols(*symbols); // the line, label, instruction are updated when this is called
+      add_function_to_symbols(symbols); // the line, label, instruction are updated when this is called
     }
 
   move_while_general(input_string, start_iterator, ' '); // Mnemonic comes next, hopefully
-  start_iterator = fill_string_until_condition(input_string, mnemonic, start_iterator, ' '); // Fill the mnemonic string
+  start_iterator = fill_string_until_character(input_string, mnemonic, start_iterator, ' '); // Fill the mnemonic string
   start_iterator = move_while_general(input_string, start_iterator, ' ');
   
   arguments->op2 = user_string_to_operand(input_string, start_iterator); // This does not move the start iterator
@@ -197,7 +189,7 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
   arguments->instruction = name_to_id(mnemonic);
   
   
-
+  return 0;
   
   // Make sure that everything is part of the text section
 
@@ -206,27 +198,50 @@ void search_line(FILE * file_in, struct instruction_pieces *arguments, enum sect
   
   // TODO: Make the array of instructions from the table and the structs of instructions
   // Along with the IDs of the instructions
-int binary_lookup(unsigned  int in, unsigned  int* array_in)
+int binary_lookup(unsigned  int in, unsigned  int* array_in, bool long_instruction)
 {
-  int high = 1073;
-  int low = 0;
-  int mid = 0; // returned
-  int counter = 12; // pretty close to log 2 1074 
+  int high_longs = 42;
+  int high_shorts = 1030; 
+  int low_longs = 0;
+  int low_shorts = 43;
+  int mid_longs = 0; // returned
+  int mid_shorts = 43;
+  int counter = 14; // pretty close to log 2 1074 
 
-  while (counter-- &&  array_in[mid] != in)
+  if (long_instruction)
     {
-      mid = (high + low)/2;
-      if (array_in[mid] < in) // need to make the bottom move up search higher range
-	low = mid;
-      else // move the top down to search the smaller numbers
-	high = mid;
-
+      while (counter-- &&  array_in[mid_longs] != in)
+	{
+	  mid_longs = (high_longs + low_longs)/2;
+	  if (array_in[mid_longs] < in) // need to make the bottom move up search higher range
+	    low_longs = mid_longs;
+	  else // move the top down to search the smaller numbers
+	    high_longs = mid_longs;
+	  
+	}
+      if (counter == 0)  // failed
+	return -1;
+      
+      else
+	return mid_longs;
     }
-  if (counter == 0)  // failed
-    return -1;
-
   else
-    return mid;
+    {
+      while (counter-- &&  array_in[mid_longs] != in)
+	{
+	  mid_longs = (high_shorts + low_shorts)/2;
+	  if (array_in[mid_shorts] < in) // need to make the bottom move up search higher range
+	    low_shorts = mid_shorts;
+	  else // move the top down to search the smaller numbers
+	    high_shorts = mid_shorts;
+	  
+	}
+      if (counter == 0)  // failed
+	return -1;
+      
+      else
+	return mid_shorts;
+    }
 }
 
 int rip_suffix(char *instruction_mnemonic, int depth)
@@ -247,31 +262,8 @@ int rip_suffix(char *instruction_mnemonic, int depth)
 }
 
   
-int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array)
-{
-  int high = 1073; int low = 0; int mid = 0;
 
-  int searches = 0;
-  
 
-  while (searches++ < 20 && array[searches] != mnemonic_ID)
-    {
-      mid = (high + low)/2;
-      if (mnemonic_ID > array[mid]) // We are too low currently
-	{
-	  low = mid;
-	}
-      else if (mnemonic_ID < array[mid])
-	{
-	  high = mid;
-	}
-      else
-	return mid;
-    }
-
-  return -1;
-  
-}
     
 
 
@@ -333,7 +325,7 @@ regular_memory_operand construct_memory_operand(char * memory_instruction_in) //
    // This does just a regular memory
    
    regular_memory_operand mem_operand;
-   mem_operand.disp = displacement_value;
+
    mem_operand.disp_length = check_for_offset(memory_instruction_in, &mem_operand.first_paren_offset, &mem_operand.disp);
    return mem_operand;
 }
@@ -355,7 +347,7 @@ sib_pieces construct_sib_from_string(char *sib_instruction_in)
   iterator = move_to_general(sib_instruction_in, iterator, ',');
   while (sib_instruction_in[iterator] == ' ')
     {
-      iterator++
+      iterator++;
     }
 
   if (sib_instruction_in[iterator] < 48 || sib_instruction_in[iterator] > 57)
@@ -436,7 +428,7 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
 	 {
           // NOT DONE YET
 	  // Will use the dependencies check function for this one
-	   if (assert_dependencies(in, &dep[(valid_neighbors[valid_neighbors_number])]));
+	   if (assert_dependencies(in, &dep[(valid_neighbors[valid_neighbors_number])]))
 	   {
 	     return valid_neighbors_number;
 	   }
@@ -498,8 +490,8 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
   if (table_in->one == mem_or_reg)
     {
       mem_or_reg_1_changed = 1;
-      if (user_in->op1 == mem)
-	table_in->one = mem;
+      if (user_in->op1 == memory)
+	table_in->one = memory;
       else if (user_in->op1 == reg)
 	table_in->one = reg;
       else
@@ -508,8 +500,8 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
    if (table_in->two == mem_or_reg)
     {
       mem_or_reg_2_changed = 1;
-      if (user_in->op2 == mem)
-	table_in->two = mem;
+      if (user_in->op2 == memory)
+	table_in->two = memory;
       else if (user_in->op2 == reg)
 	table_in->two = reg;
       else
@@ -521,8 +513,8 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
        mem_or_xmm_1_changed = 1;
        if (user_in->op1 == xmm)
 	 table_in->one = xmm;
-       else if (user_in->op1 == mem)
-	 table_in->one = mem;
+       else if (user_in->op1 == memory)
+	 table_in->one = memory;
        else
 	 return 0;
      }
@@ -532,8 +524,8 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
        mem_or_xmm_2_changed = 1;
        if (user_in->op2 == xmm)
 	 table_in->two = xmm;
-       else if (user_in->op2 == mem)
-	 table_in->two = mem;
+       else if (user_in->op2 == memory)
+	 table_in->two = memory;
        else
 	 return 0;
      }
@@ -560,7 +552,7 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
 
 
   
- sizes_check:  if (!check_sizes(user_in->op1_size, table_in->allowed_sizes))
+ if (!check_sizes(user_in->op1_size, table_in->allowed_sizes))
     {
       return 0;
     }
