@@ -3,6 +3,7 @@
 #include "../include/get_instructions.h"
 #include <string.h>
 #include <assert.h>
+#include "../include/utilities.h"
 
 // NOTE: The file should be preprocessed before to standardize the input registers
 // In order for this to be pulled together:
@@ -635,10 +636,6 @@ int ret_mod(char * input)
   
 }
 
-inline bool needs_rex_r(char * reg)
-{
-  return (reg[2] > 47 && reg[2] < 58);
-}
 
 
 void reg_table_register_extension(struct temprm * temp, char * reg, bool is_first, bool rex_r)

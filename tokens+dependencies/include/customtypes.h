@@ -158,7 +158,7 @@ struct symbols_information
   int current_label;
   int current_instruction_number;
   int * jump_instructions; // lines that have labels
-  char ** string_for_jumps; // Must correspond to the jump table exactly
+  char * string_for_jumps[500]; // Must correspond to the jump table exactly
   int * lengths_labels;
   bool _start_found; // entry into the program
   // NOT COMPLETE
@@ -197,7 +197,7 @@ union operand_types
   long unsigned int immediatelong;
   unsigned int immediate;
   short unsigned int immediateshort;
-  char reg_string[8];
+  char *reg_string;
 };
 
 #endif

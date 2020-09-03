@@ -12,4 +12,5 @@ int sib_rexr_table_base(char* in, int mod);
 int sib_regular_table_base(char* in, int mod);
 int sib_rexr_table_index(char* in, int mod);
 int sib_regular_table_index(char* in, int mod);
-
+unsigned char make_sib_byte(struct sib sib_operand);
+int switch_on_sib_scale(int scale );

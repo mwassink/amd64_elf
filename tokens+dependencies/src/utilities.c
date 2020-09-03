@@ -586,28 +586,7 @@ int fill_string_with_line(int max_size, char * string, FILE *fptr)
   return iterator;
 }
 
-int check_for_jump_label(const char *string_in, char *replaced, int *current_spot)
-{
-  *current_spot = 0;
-  if (string_in[0] != ' ' && string_in[0] != 9)
-    {
-      int i = 0;
-      for (; string_in[i] != ':'; ++i)
-	{
-	  if (string_in[i] == '\n' || string_in[i] == ' ')
-	    {
-	      return -1;
-	    }
-	  replaced[i] = string_in[i];
-	}
-      return i;
-    }
 
-  else
-    {
-      return 0;
-    }
-}
 
 
 int numbits_from_suffix( char * instruction_at_suffix)

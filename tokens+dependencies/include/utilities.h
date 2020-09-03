@@ -28,7 +28,7 @@ bool check_for_segment_register(char *reg);
 enum Basic_Operands type_fallback(const char * in);
 enum Basic_Operands operand_type_return(char *in);
 int fill_string_with_line(int max_size, char * string, FILE *fptr);
-int check_for_jump_label(const char *string_in, char *replaced, int *current_spot);
+
 int numbits_from_suffix(char * instruction_at_suffix);
 int check_for_lock_prefix( char * string, int *start_index);
 int fill_string_until_character(const char *input_string, char *target, int start_iterator, char condition);

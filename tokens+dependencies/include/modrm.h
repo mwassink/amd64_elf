@@ -23,7 +23,6 @@ int mod11_rex(char* in);
 int mod11_others(char* in);
 void reg_table_register_new(struct temprm* temp, char* reg, bool is_first);
 int ret_mod(char* input);
-inline bool needs_rex_r(char* reg);
 void reg_table_register_extension(struct temprm* temp, char* reg, bool is_first, bool rex_r);
 void reg_table_byte_no_rex(struct temprm* temp, char* reg, bool is_first);
 void reg_table_byte_rex(struct temprm* temp, char* reg, bool is_first);

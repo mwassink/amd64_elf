@@ -12,10 +12,11 @@
 #include "../include/symbols.h"
 
 
+
 // This file needs to go through line by line and check for tokens. It will just look for whitespace and endlines
 // text holds the actual instructions and registers
 // the other sections have to look through the declared variables and stuff
-
+ 
 typedef unsigned char byte;
 
 bool check_sizes(int size_in, struct available_sizes available)
@@ -88,7 +89,7 @@ int check_for_jump_label(const char * input_string, struct symbols_information *
 
   for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != 9; ++start_iterator);
  
-
+ 
   // If we started on a space or a tab
   // Need to return from the function
   if (start_iterator == 0)
@@ -100,11 +101,18 @@ int check_for_jump_label(const char * input_string, struct symbols_information *
     {
       fprintf(stderr, "Failure assembling the line. Label expected but not denoted properly");
       assert(0 ==1);
+      return -1;
     }
 
   else
     {
       sym_info->current_label++;
+      char* temp = sym_info->string_for_jumps[sym_info->current_label - 1];
+
+      for (int i = 0; i < start_iterator; ++i)
+	{
+	  temp[i] = start_iterator;
+	}
       return start_iterator;
     }
 
@@ -145,7 +153,10 @@ int search_line(FILE * file_in, struct instruction_pieces *arguments, struct sym
   char *mnemonic = (char *)malloc(15); // 15 bytes for the future mnemonic
   memset(mnemonic, 0, 15);
   
-  size_t line_length = fill_string_with_line(250, input_string, file_in);
+  if (fgets(input_string, 250, file_in) == NULL)
+    {
+      return 2;
+    }
   enum section_types type = check_for_section_label(input_string, &line_iterator );
 
   if (type != text && type != none )
@@ -198,7 +209,7 @@ int search_line(FILE * file_in, struct instruction_pieces *arguments, struct sym
   
   // TODO: Make the array of instructions from the table and the structs of instructions
   // Along with the IDs of the instructions
-int binary_lookup(unsigned  int in, unsigned  int* array_in, bool long_instruction)
+int binary_lookup(unsigned  int in, struct instruction_definition* array_in, bool long_instruction)
 {
   int high_longs = 42;
   int high_shorts = 1030; 
@@ -213,7 +224,7 @@ int binary_lookup(unsigned  int in, unsigned  int* array_in, bool long_instructi
       while (counter-- &&  array_in[mid_longs] != in)
 	{
 	  mid_longs = (high_longs + low_longs)/2;
-	  if (array_in[mid_longs] < in) // need to make the bottom move up search higher range
+	  if (array_in[mid_longs].mnemonic < in) // need to make the bottom move up search higher rang
 	    low_longs = mid_longs;
 	  else // move the top down to search the smaller numbers
 	    high_longs = mid_longs;
@@ -230,7 +241,7 @@ int binary_lookup(unsigned  int in, unsigned  int* array_in, bool long_instructi
       while (counter-- &&  array_in[mid_longs] != in)
 	{
 	  mid_longs = (high_shorts + low_shorts)/2;
-	  if (array_in[mid_shorts] < in) // need to make the bottom move up search higher range
+	  if (array_in[mid_shorts].mnemonic < in) // need to make the bottom move up search higher range
 	    low_shorts = mid_shorts;
 	  else // move the top down to search the smaller numbers
 	    high_shorts = mid_shorts;
@@ -244,7 +255,7 @@ int binary_lookup(unsigned  int in, unsigned  int* array_in, bool long_instructi
     }
 }
 
-int rip_suffix(char *instruction_mnemonic, int depth)
+void rip_suffix(char *instruction_mnemonic, int depth)
 {
   //  suffixes
   int length = 0;
@@ -257,7 +268,6 @@ int rip_suffix(char *instruction_mnemonic, int depth)
     {
       instruction_mnemonic[length - i] = 0;
     }
-
 
 }
 
@@ -434,7 +444,7 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
 	   }
 	 }
 
-      
+       return -1;
     }
 
   else
@@ -467,7 +477,7 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
 	  }
         }
 
-
+      return -1;
 
     }
   

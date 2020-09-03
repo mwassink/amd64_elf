@@ -15,8 +15,8 @@ int check_for_jump_label(const char * input_string, struct symbols_information *
 void init_op_info(struct memory_op_info *in);
 int ascii_to_int( char * in, int *returned_index);
 int search_line(FILE * file_in, struct instruction_pieces *arguments, struct symbols_information *symbols);
-int binary_lookup(unsigned  int in, unsigned  int* array_in, bool long_instruction);
-int rip_suffix(char *instruction_mnemonic, int depth);
+int binary_lookup(unsigned  int in, struct instruction_definition* array_in, bool long_instruction);
+void rip_suffix(char *instruction_mnemonic, int depth);
 int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array);
 int check_for_offset(char * string, int *start_parentheses, int *disp_value);
 regular_memory_operand construct_memory_operand(char * memory_instruction_in);
