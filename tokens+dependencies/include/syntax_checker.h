@@ -21,9 +21,9 @@ int search_for_mnemonic (unsigned long int mnemonic_ID, unsigned long *array);
 int check_for_offset(char * string, int *start_parentheses, int *disp_value);
 regular_memory_operand construct_memory_operand(char * memory_instruction_in);
 sib_pieces construct_sib_from_string(char *sib_instruction_in);
-int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep);
 bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies *table_in);
 enum Basic_Operands user_string_to_operand(const char *string_in, int start_index);
 char *copy_until_space(char * old);
-
+int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep,
+		      struct instruction_definition *defs);
 #endif

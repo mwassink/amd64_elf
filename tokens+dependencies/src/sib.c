@@ -4,6 +4,8 @@
 #include <assert.h>
 #include "../include/sib.h"
 #include <stdbool.h>
+#include "../include/utilities.h"
+#include <stdlib.h>
 // Example with the sib indexing
 
 // This is used for addressing between registers
@@ -58,6 +60,25 @@ int switch_on_sib_scale(int scale )
       return 2;
     case 8:
       return 3;
+    default:
+      printf("Improper scale used for the SIB. 1,2,4,8 are allowed");
+      exit(1);
+    }
+}
+ 
+int get_mod_from_disp(int disp)
+{
+  switch(disp)
+    {
+    case 0:
+      return 0;
+    case 1:
+      return 1;
+    case 4:
+      return 2;
+    default:
+      printf("Invalid displacement");
+      exit(1);
     }
 }
 
@@ -70,14 +91,15 @@ unsigned char make_sib_byte(struct sib sib_operand)
     sib_operand.scale -= 48;
 
   
+  
   to_be_returned = switch_on_sib_scale(sib_operand.scale);
   to_be_returned <<= 3; // make space for the next one
 
   if (needs_rex_r(sib_operand.operand + sib_operand.index_index))
-    to_be_returned |= sib_rexr_table_index(sib_operand.operand + sib_operand.index_index);
+    to_be_returned |= sib_rexr_table_index(sib_operand.operand + sib_operand.index_index) ;
 
   else
-    to_be_returned |= sib_regular_table_index(sib_operand.operand + sib_operand.index_index);
+    to_be_returned |= sib_regular_table_index(sib_operand.operand + sib_operand.index_index );
 
   to_be_returned <<= 3;
   
@@ -95,7 +117,7 @@ unsigned char make_sib_byte(struct sib sib_operand)
 
 
 
-inline bool sib_reg_string_compare (char  * in, char  * in2, bool long_check) // before, just cast the address to one of type int, compiler will know what to do 
+bool sib_reg_string_compare (char  * in, char  * in2, bool long_check) // before, just cast the address to one of type int, compiler will know what to do 
 {
     int* lhs = (int*)in;
     int* rhs = (int*)in2;
@@ -109,9 +131,10 @@ inline bool sib_reg_string_compare (char  * in, char  * in2, bool long_check) //
 	  if (in[i] != in2[i])
 	    return false;
 	}
+      return true;
     }
     else
-        return *lhs == *rhs;
+      return (*lhs == *rhs);
 }
 
 // NOTE: I have to decide whether to process the whole instruction at once or to put it into a struct and operate on it 
@@ -185,7 +208,7 @@ int sib_regular_table_base(char* in, int mod)
     {
         if (mod == 0)
         {
-            fprintf(stderr, "%rbp cannot be used as a base with 0 displacement");
+            fprintf(stderr, "rbp cannot be used as a base with 0 displacement");
             assert(0 == 1);
 
         }
@@ -198,7 +221,7 @@ int sib_regular_table_base(char* in, int mod)
 
   else if (sib_reg_string_compare(in, "%rdi", 0))
         return 7;
-
+ 
     else
     {
         fprintf(stderr, "End of control for sib_regular_table_index(char* in, int mod), no reg found");

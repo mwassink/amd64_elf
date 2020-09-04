@@ -5,12 +5,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-typedef struct
-{
-  unsigned char addressing_67_prefix;
-  unsigned char flags;
-} prefixes;
-
 
 bool needs_rex_r(const char *input);
 int move_to_endline(const char * input_string, int start_iterator);

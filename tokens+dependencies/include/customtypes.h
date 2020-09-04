@@ -2,6 +2,7 @@
 #define CUSTOMTYPES_H
 #include <stdbool.h>
 
+#define MAX_LABELS 200
 enum Basic_Operands {no_operand, immediate, memory, reg, sib, mem_or_reg, mm, xmm, stack_reg, segment, implied_reg,
 		     flag, empty, rflags, memory_offset, relative_offset, push_or_pop, xmm_or_mem, rax,
                      eflags, rel, not_found};
@@ -9,6 +10,43 @@ enum Basic_Operands {no_operand, immediate, memory, reg, sib, mem_or_reg, mm, xm
 enum section_types {none, text, bss, data, invalid_section_label};
 // These are necessary for the instruction, given the mnemonic or the ID
 
+typedef unsigned char BYTE;
+
+
+typedef struct
+{
+  unsigned char addressing_67_prefix;
+  unsigned char flags;
+} prefixes;
+
+
+
+typedef struct 
+{
+  prefixes potential_prefixes; // address override, other register prefixes
+  int displacement; // max of 32 bits
+  int immediate; // max of 32 bits
+  char prefix_OF; 
+  unsigned char primary_opcode;
+  unsigned char secondary_opcode;
+  unsigned char modrm;
+  unsigned char sib;
+
+  int immediate_max_size;
+  bool end_file;
+  bool modrm_dirty;
+  bool sib_dirty;
+  bool so_dirty;
+  bool immediate_dirty;
+  /* 0 is valid for: 
+     primary_opcode
+     secondary_opcode 
+     modrm
+     sib
+     immediate 
+   */
+  
+} potential_writes;
 
 
 
@@ -154,13 +192,13 @@ struct memory_op_info
 
 struct symbols_information
 {
-  int current_line;
-  int current_label;
-  int current_instruction_number;
-  int * jump_instructions; // lines that have labels
-  char * string_for_jumps[500]; // Must correspond to the jump table exactly
-  int * lengths_labels;
-  bool _start_found; // entry into the program
+  int current_label_length;
+  int current_label_index;
+  int corresponding_offsets_for_labels[MAX_LABELS];
+  char string_for_jumps[MAX_LABELS][50]; // Must correspond to the jump table exactly
+  BYTE *instructions;
+  int bytes_written;
+  
   // NOT COMPLETE
 
 

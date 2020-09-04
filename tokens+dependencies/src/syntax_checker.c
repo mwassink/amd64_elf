@@ -106,14 +106,8 @@ int check_for_jump_label(const char * input_string, struct symbols_information *
 
   else
     {
-      sym_info->current_label++;
-      char* temp = sym_info->string_for_jumps[sym_info->current_label - 1];
-
-      for (int i = 0; i < start_iterator; ++i)
-	{
-	  temp[i] = start_iterator;
-	}
-      return start_iterator;
+      
+      return start_iterator; // wil be handled in the next part 
     }
 
   
@@ -141,7 +135,7 @@ int ascii_to_int( char * in, int *returned_index)
 int search_line(FILE * file_in, struct instruction_pieces *arguments, struct symbols_information *symbols)
 {
 
-    symbols->current_line++;
+    
     
   // The fp has information on where in the file we are, this assumes that we
   // are at the beginning of the line and that the file is opened already
@@ -166,20 +160,21 @@ int search_line(FILE * file_in, struct instruction_pieces *arguments, struct sym
     }
   // text assumed
   // if we get type of text then just return as nothing else will be on the line
-  return 1;
+  if (type == text)
+    return 1;
   
-  // Must be no label
-  symbols->current_instruction_number++;
- 
   int start_iterator = check_for_jump_label( input_string, symbols);
 
-
-  
   if (start_iterator) // the start iterator is not zero, label found
     {
-      symbols->current_label++;
-      // Make sure to copy this string, and terminate it at the start_iterator
-      add_function_to_symbols(symbols); // the line, label, instruction are updated when this is called
+      symbols->corresponding_offsets_for_labels[symbols->current_label_index++] = symbols->bytes_written;
+      //fill the label starting at 0, going until start_iterator
+      for (int i = 0; i < start_iterator; ++i)
+	symbols->string_for_jumps[symbols->current_label_index-1][i] = input_string[i];
+      
+      
+      symbols->current_label_length = 0;
+      
     }
 
   move_while_general(input_string, start_iterator, ' '); // Mnemonic comes next, hopefully
@@ -221,7 +216,7 @@ int binary_lookup(unsigned  int in, struct instruction_definition* array_in, boo
 
   if (long_instruction)
     {
-      while (counter-- &&  array_in[mid_longs] != in)
+      while (counter-- &&  array_in[mid_longs].long_mnemonic != in)
 	{
 	  mid_longs = (high_longs + low_longs)/2;
 	  if (array_in[mid_longs].mnemonic < in) // need to make the bottom move up search higher rang
@@ -238,7 +233,7 @@ int binary_lookup(unsigned  int in, struct instruction_definition* array_in, boo
     }
   else
     {
-      while (counter-- &&  array_in[mid_longs] != in)
+      while (counter-- &&  array_in[mid_longs].long_mnemonic != in)
 	{
 	  mid_longs = (high_shorts + low_shorts)/2;
 	  if (array_in[mid_shorts].mnemonic < in) // need to make the bottom move up search higher range
@@ -374,13 +369,15 @@ sib_pieces construct_sib_from_string(char *sib_instruction_in)
 
 
 
-int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep)
+int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep,
+		      struct instruction_definition *defs)
 {
   /* Now some requirements for instructions will be listed
-     - < 2 memory operands
+     - < 2 memory operands 
     - < 2 immediates
+
      - If a dependency check fails for a mnemonic, try one of the nearest ones. Likely, lots of them will fail as of now
-   */
+   */ 
   unsigned long int ID = name_to_id(in->instruction_mnemonic);
   int index = -1;
   if (!ID)
@@ -389,18 +386,18 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
         for (int i = 0; i < 3; ++i)
 	  {
 	    rip_suffix(in->instruction_mnemonic, i);
-	    search_for_mnemonic(ID, longer_mnemonics );
+	    ID = name_to_id(in->instruction_mnemonic+8);
+	    index = binary_lookup(ID, defs, 1);
 	    if (index != -1)
-	      break;
+	      break; 
 	  }
     }
-
   else
     {
       for (int i = 0; i < 3; ++i)
 	  {
 	    rip_suffix(in->instruction_mnemonic, i);
-	    search_for_mnemonic(ID, shorter_mnemonics );
+	    binary_lookup(ID, defs, 0 );
 	    if (index != -1)
 	      break;
 	  }
@@ -482,7 +479,9 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
     }
   
   
-} 
+}
+
+
 bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies *table_in)
 {
   /*
@@ -644,7 +643,17 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
 }
 
 
+char * copy_until_space(char * old)
+{
+  char * to_be_returned = malloc(25);
 
+  memset(to_be_returned, 0, 25);
+  for (int i = 0; old[i] != 0; ++i)
+    {
+      to_be_returned[i] = old[i];
+    }
+  return to_be_returned;
+}
 
 
 

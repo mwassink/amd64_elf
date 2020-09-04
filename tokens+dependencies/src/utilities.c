@@ -178,11 +178,11 @@ int * possible_sizes(char * available_operands_in)
   int i = 0; int one_length = 0; int two_length = 0; int three_length = 0; int four_length = 0; 
 
   
-  for (; available_operands_in[i] < 48 && available_operands_in[i] > 57; ++i) // Jump to number
+  for (; available_operands_in[i] <  48 || available_operands_in[i] > 57; ++i) // Jump to number
     {
       if (available_operands_in[i] == 0)
 	{
-	  return sizes;
+	  return sizes; //failed got nothing
 	}
     }  
   for (; available_operands_in[i] >= 48 && available_operands_in[i] <= 57; ++i )
@@ -191,11 +191,11 @@ int * possible_sizes(char * available_operands_in)
     }
 
   
-   for (; available_operands_in[i] < 48 && available_operands_in[i] > 57; ++i) // Jump to number
+   for (; available_operands_in[i] < 48 || available_operands_in[i] > 57; ++i) // Jump to number
     {
       if (available_operands_in[i] == 0)
 	{
-	  return sizes;
+	  goto zero; // only one has been completed
 	}
     }
    for (; available_operands_in[i] >= 48 && available_operands_in[i] <= 57; ++i )
@@ -204,11 +204,11 @@ int * possible_sizes(char * available_operands_in)
     }
 
 
-   for (; available_operands_in[i] < 48 && available_operands_in[i] > 57; ++i) // Jump to number
+   for (; available_operands_in[i] < 48 || available_operands_in[i] > 57; ++i) // Jump to number
     {
       if (available_operands_in[i] == 0)
 	{
-	  return sizes;
+	  goto one; //two have been completed
 	}
     }
    for (; available_operands_in[i] >= 48 && available_operands_in[i] <= 57; ++i )
@@ -217,11 +217,11 @@ int * possible_sizes(char * available_operands_in)
     }
 
 
-   for (; available_operands_in[i] < 48 && available_operands_in[i] > 57; ++i) // Jump to number
+   for (; available_operands_in[i] < 48 || available_operands_in[i] > 57; ++i) // Jump to number
     {
       if (available_operands_in[i] == 0)
 	{
-	  return sizes;
+	  goto two; // three have been completed
 	}
     }
    for (; available_operands_in[i] >= 48 && available_operands_in[i] <= 57; ++i )
@@ -229,7 +229,13 @@ int * possible_sizes(char * available_operands_in)
       four[four_length++] = available_operands_in[i];
     }
 
-   sizes[0] = atoi(one); sizes[1] = atoi(two); sizes[2] = atoi(three); sizes[3] = atoi(four);
+ sizes[3] = atoi(four);
+ two: sizes[2] = atoi(three);
+ one: sizes[1] = atoi(two);
+ zero: sizes[0] = atoi(one);
+   
+
+   
 						
    
   return sizes;
@@ -345,7 +351,7 @@ enum Basic_Operands type_fallback(const char * in)
 
 
   if (in[0] == 0) {
-    return none;
+    return no_operand;
   }
 
 

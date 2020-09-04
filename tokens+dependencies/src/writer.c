@@ -4,9 +4,9 @@
 #include "../include/machine_instructions.h"
 #include "../include/modrm.h"
 #include "../include/sib.h"
-#include "../include/symbols.h"
 #include "../include/syntax_checker.h"
 #include "../include/utilities.h"
+#include "../include/writer.h"
 #include <string.h>
 #include "stdbool.h"
 #include <assert.h>
@@ -14,32 +14,7 @@
 
 // This file will pull some of the other files and write opcodes
 // It will also deposit other symbols like functions and files into a different file
-typedef struct 
-{
-  prefixes potential_prefixes; // address override, other register prefixes
-  int displacement; // max of 32 bits
-  int immediate; // max of 32 bits
-  char prefix_OF; 
-  unsigned char primary_opcode;
-  unsigned char secondary_opcode;
-  unsigned char modrm;
-  unsigned char sib;
-
-  int immediate_max_size;
-  bool end_file;
-  bool modrm_dirty;
-  bool sib_dirty;
-  bool so_dirty;
-  bool immediate_dirty;
-  /* 0 is valid for: 
-     primary_opcode
-     secondary_opcode 
-     modrm
-     sib
-     immediate 
-   */
-  
-} potential_writes;
+ 
 
 
 potential_writes write_instruction_opcode_from_line( struct instruction_definition *table, FILE * current_spot, struct symbols_information *symbols_in)
@@ -169,6 +144,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
   else if (args_from_the_user.op1 == xmm)
     {
       to_be_written.modrm_dirty = 1;
+      operand1.reg_string = args_from_the_user.op1_mnemonic;
       if (table->requirements.one == xmm_or_mem)
 	{
 	  // secondary priority
@@ -217,7 +193,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 
    else if (args_from_the_user.op2 == immediate)
     {
-      
+      operand2.immediate = atoi(args_from_the_user.op2_mnemonic + 1);
       to_be_written.immediate_dirty = 1;
       int size_immediate = 0;
       if (table->requirements.allowed_sizes.byte_8)
@@ -328,6 +304,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 
    else if (args_from_the_user.op2 == xmm)
     {
+      operand2.reg_string = args_from_the_user.op2_mnemonic;
       to_be_written.modrm_dirty = 1;
       if (table->requirements.two == xmm_or_mem)
 	{
@@ -358,14 +335,14 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 
 
 
-void  writer( char * file_in, struct symbols_information *symbols_in)
+int  writer( FILE* user_file, struct symbols_information *symbols_in)
 {
-  printf("Defaulting to .text as section if none given");
+  printf("Defaulting to .text");
 
-
+  
   // Construct file pointer to start reading the file 
-  FILE * file_pointer = fopen(file_in, "r");
-  FILE * read_init = fopen("convert_instructions.bin", "rb");
+
+  FILE * read_init = fopen("data/convert_instructions.bin", "rb");
   
 
   struct instruction_definition for_size;
@@ -378,7 +355,7 @@ void  writer( char * file_in, struct symbols_information *symbols_in)
 #if debug
       int check = symbols_in->current_instruction_number;
 #endif
-      potential_writes need_to_write = write_instruction_opcode_from_line(table, file_pointer, symbols_in); // this calls for a specific pointer to a symbols_in
+      potential_writes need_to_write = write_instruction_opcode_from_line(table, user_file, symbols_in); // this calls for a specific pointer to a symbols_in
       prev = need_to_write.end_file;
       // Now look for the stuff that I need to change
 #if debug
@@ -386,13 +363,90 @@ void  writer( char * file_in, struct symbols_information *symbols_in)
 #endif
       // Now I need to get the order of the writing correct. it goes:
       /*
-	1. Addressing prefix
-	2. Combination of the registers prefix
-
+	1. Addressing prefix 0x67 ex
+	2. Combination of the registers prefix 0x48 ex
+	3. prefix OF 
+	4. primary_opcode
+	5. secondary_opcode
+	6. modrm
+	7. sib
+	8. disp
+	9. immediate 
 
 
        */
+      
+      
+      if (need_to_write.potential_prefixes.addressing_67_prefix)
+	{
+	  symbols_in->instructions[symbols_in->bytes_written] = 0x67;
+	  symbols_in->bytes_written++;
+	}
+      if (need_to_write.potential_prefixes.flags)
+	{
+	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.potential_prefixes.flags;
+	  symbols_in->bytes_written++;
+	}
+      if (need_to_write.prefix_OF)
+	{
+	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.prefix_OF;
+	  symbols_in->bytes_written++;
+	}
+      symbols_in->instructions[symbols_in->bytes_written] = need_to_write.primary_opcode;
+      symbols_in->bytes_written++;
 
+      if (need_to_write.so_dirty)
+	{
+	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.secondary_opcode;
+	  symbols_in->bytes_written++;
+	}
+      if (need_to_write.modrm_dirty)
+	{
+	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.modrm;
+	  symbols_in->bytes_written++;
+	}
+      if (need_to_write.sib_dirty)
+	{
+	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.sib;
+	  symbols_in->bytes_written++;
+	}
+
+      if ((need_to_write.modrm >> 30) == 2)
+	{
+	  // Mod 10
+	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.displacement;
+	  symbols_in->bytes_written++;
+	}
+
+      if ((need_to_write.modrm >>30) == 3)
+	{
+	  int * write_spot = (int *)&symbols_in->instructions[symbols_in->bytes_written];
+	  *write_spot = need_to_write.displacement;
+	  symbols_in->bytes_written += 4;
+	}
+
+      if (need_to_write.immediate_dirty)
+	{
+	  if (need_to_write.immediate_max_size == 16)
+	    {
+	      short int * write_spot = (short int *)&symbols_in->instructions[symbols_in->bytes_written];
+	      *write_spot = need_to_write.immediate;
+	      symbols_in->bytes_written += 2;
+	    }
+	  else
+	    {
+	      int * write_spot = (int *)&symbols_in->instructions[symbols_in->bytes_written];
+	      *write_spot = need_to_write.immediate;
+	      symbols_in->bytes_written += 4;
+	    }
+	    
+	}
+      
+      
+      
+      
       
     }
+
+  return 0;
 }
