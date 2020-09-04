@@ -20,8 +20,10 @@
 potential_writes write_instruction_opcode_from_line( struct instruction_definition *table, FILE * current_spot, struct symbols_information *symbols_in)
 {
   // Make sure that this is not a label first
+  top: assert(0 == 0);
   potential_writes to_be_written;
   struct instruction_pieces args_from_the_user;
+  memset(&args_from_the_user, 0, sizeof (args_from_the_user));
   int error = search_line(current_spot, &args_from_the_user,  symbols_in);
 
   if (error == 2)
@@ -30,9 +32,16 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
       to_be_written.end_file = 1;
       return to_be_written;
     }
-  
+  if (error == 1)
+      {
+          // go to the next line
+          goto top;
+      }
   memset((void *)&to_be_written,0 ,  sizeof(to_be_written));
-  table += binary_lookup(args_from_the_user.instruction, table, !args_from_the_user.instruction);
+  table += check_instruction(&args_from_the_user,  table);
+
+  //int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep,
+  //struct instruction_definition *defs)
 
   
   union operand_types operand1;
@@ -337,12 +346,19 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 
 int  writer( FILE* user_file, struct symbols_information *symbols_in)
 {
-  printf("Defaulting to .text");
+
 
   
   // Construct file pointer to start reading the file 
 
-  FILE * read_init = fopen("data/convert_instructions.bin", "rb");
+  FILE * read_init = fopen("../data/converted_instructions.bin", "rb");
+
+  if (!read_init)
+      {
+          printf("Could not find data directory. Please make sure that the program is being run");
+          printf("In the bin directory with the file structure intact");
+          read_init = fopen("data/converted_instructions.bin", "rb");
+      }
   
 
   struct instruction_definition for_size;

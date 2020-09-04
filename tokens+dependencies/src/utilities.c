@@ -342,6 +342,28 @@ bool check_for_segment_register(char *reg)
 
 }
 
+enum Basic_Operands user_fallback(const char * in)
+{
+    if (in[0] == 'r')
+        return reg;
+    else if (in[0] == 'e')
+        return reg;
+    else if (in[0] == 'x')
+        return xmm;
+    else
+        {
+            printf("Type not found");
+            exit(1);
+        }
+
+}
+
+
+
+
+
+
+
 
 enum Basic_Operands type_fallback(const char * in)
 {

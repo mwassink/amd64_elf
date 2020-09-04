@@ -36,7 +36,7 @@ test_convert_instructions: test_convert_instructions.o convert_instruction.o  ge
 	@echo "Linking Objects"
 	$(CC) $(CFLAGSDEBUG)  $(TESTDIR)/$^ -o $(BINDIR)/$@
 	$(RM) $(TESTDIR)/$^
-amd64_elf: main.o writer.o syntax_checker.o utilities.o sib.o modrm.c
+amd64_elf: main.o writer.o syntax_checker.o utilities.o sib.o modrm.o
 	@echo "Linking Objects"
 	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
 	$(RM) $^ 

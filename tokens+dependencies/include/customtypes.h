@@ -167,14 +167,14 @@ struct sib_byte
 
 struct instruction_pieces
 {
-  char * instruction_mnemonic;
+  char  instruction_mnemonic[20];
   long unsigned int instruction; // This will match the table which allows for a quick search
   enum Basic_Operands op1;
   int op1_size;
-  char * op1_mnemonic;
+  char op1_mnemonic[20];
   enum Basic_Operands op2;
   int op2_size;
-  char * op2_mnemonic;
+  char op2_mnemonic[20];
   int size;
   bool wants_lock;
 };
@@ -192,9 +192,9 @@ struct memory_op_info
 
 struct symbols_information
 {
-  int current_label_length;
+  
   int current_label_index;
-  int corresponding_offsets_for_labels[MAX_LABELS];
+  int corresponding_starts_for_labels[MAX_LABELS]; // same thing as start
   char string_for_jumps[MAX_LABELS][50]; // Must correspond to the jump table exactly
   BYTE *instructions;
   int bytes_written;

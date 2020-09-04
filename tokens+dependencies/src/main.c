@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "../include/customtypes.h"
-
+#include <stdlib.h>
 int main(int argc, char ** argv)
 {
   
@@ -13,6 +13,7 @@ int main(int argc, char ** argv)
   if (!input_assembly_file)
     {
       printf("Could not open the assembly file" );
+      exit(1);
     }
 
   

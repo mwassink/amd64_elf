@@ -52,7 +52,7 @@ enum section_types check_for_section_label(const char * input_string, int * iter
     }
 
   int string_iterator = 0;
-  for (; input_string[start_iterator] != ' '; ++start_iterator, ++string_iterator)
+  for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != '\n'; ++start_iterator, ++string_iterator)
     {
       temp_string[string_iterator]= input_string[start_iterator];
     }
@@ -87,7 +87,7 @@ int check_for_jump_label(const char * input_string, struct symbols_information *
   int start_iterator = 0;
   
 
-  for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != 9; ++start_iterator);
+  for (; input_string[start_iterator] != ' ' && input_string[start_iterator] != 9 && input_string[start_iterator] != '\n'; ++start_iterator);
  
  
   // If we started on a space or a tab
@@ -97,7 +97,7 @@ int check_for_jump_label(const char * input_string, struct symbols_information *
       return -1;
     }
 
-  else if (input_string[start_iterator] != ':')
+  else if (input_string[start_iterator - 1] != ':')
     {
       fprintf(stderr, "Failure assembling the line. Label expected but not denoted properly");
       assert(0 ==1);
@@ -167,32 +167,44 @@ int search_line(FILE * file_in, struct instruction_pieces *arguments, struct sym
 
   if (start_iterator) // the start iterator is not zero, label found
     {
-      symbols->corresponding_offsets_for_labels[symbols->current_label_index++] = symbols->bytes_written;
+      symbols->corresponding_starts_for_labels[symbols->current_label_index] = symbols->bytes_written;
       //fill the label starting at 0, going until start_iterator
       for (int i = 0; i < start_iterator; ++i)
-	symbols->string_for_jumps[symbols->current_label_index-1][i] = input_string[i];
+        symbols->string_for_jumps[symbols->current_label_index][i] = input_string[i];
       
       
-      symbols->current_label_length = 0;
+      symbols->current_label_index++;
       
     }
 
-  move_while_general(input_string, start_iterator, ' '); // Mnemonic comes next, hopefully
-  start_iterator = fill_string_until_character(input_string, mnemonic, start_iterator, ' '); // Fill the mnemonic string
-  start_iterator = move_while_general(input_string, start_iterator, ' ');
-  
-  arguments->op2 = user_string_to_operand(input_string, start_iterator); // This does not move the start iterator
-  arguments->op2_mnemonic = copy_until_space(input_string + start_iterator);
-  
-  start_iterator = move_to_general(input_string,start_iterator, ' '); // move to the next space
-  start_iterator = move_to_general(input_string, start_iterator, ','); // move to the next comma
-  start_iterator = move_while_general(input_string, start_iterator, ' '); // move to the next operand
-  
-  arguments->op1 = user_string_to_operand(input_string, start_iterator);
-  arguments->op1_mnemonic = copy_until_space(input_string + start_iterator);
+start_iterator = move_while_general(input_string, start_iterator, ' '); // Mnemonic comes next, hopefully
 
-  arguments->instruction_mnemonic = mnemonic;
-  arguments->instruction = name_to_id(mnemonic);
+  if (input_string[start_iterator] == '\n') // this is fine we can just wait until the next non-space
+      {
+        start_iterator = 0;
+        if (fgets(input_string, 250, file_in) == NULL)
+            {
+                printf("Empty label. Do not do that");
+                exit(1);
+            }
+
+      }
+
+
+
+  sscanf(input_string, "%*[\t\r \n]%s%*[\t\r \n]%s%*[\t\r\n ,]%s", arguments->instruction_mnemonic, arguments->op2_mnemonic
+         , arguments->op1_mnemonic );
+
+
+  
+  arguments->op2 = user_string_to_operand(arguments->op2_mnemonic,0); // This does not move the start iterator
+
+  
+  arguments->op1 = user_string_to_operand(arguments->op1_mnemonic,0);
+
+
+
+  arguments->instruction = name_to_id(arguments->instruction_mnemonic);
   
   
   return 0;
@@ -221,32 +233,35 @@ int binary_lookup(unsigned  int in, struct instruction_definition* array_in, boo
 	  mid_longs = (high_longs + low_longs)/2;
 	  if (array_in[mid_longs].mnemonic < in) // need to make the bottom move up search higher rang
 	    low_longs = mid_longs;
-	  else // move the top down to search the smaller numbers
+          else if(array_in[mid_longs].mnemonic > in) // move the top down to search the smaller numbers
 	    high_longs = mid_longs;
+          else
+              return mid_longs;
 	  
 	}
-      if (counter == 0)  // failed
+       // failed
 	return -1;
       
-      else
-	return mid_longs;
+
     }
   else
     {
-      while (counter-- &&  array_in[mid_longs].long_mnemonic != in)
+      while (counter-- &&  array_in[mid_shorts].long_mnemonic != in)
 	{
-	  mid_longs = (high_shorts + low_shorts)/2;
+          mid_shorts = (high_shorts + low_shorts)/2;
 	  if (array_in[mid_shorts].mnemonic < in) // need to make the bottom move up search higher range
 	    low_shorts = mid_shorts;
-	  else // move the top down to search the smaller numbers
+          else if (array_in[mid_shorts].mnemonic > in)// move the top down to search the smaller numbers
 	    high_shorts = mid_shorts;
+          else
+              return mid_shorts;
 	  
 	}
-      if (counter == 0)  // failed
+       // failed
 	return -1;
       
-      else
-	return mid_shorts;
+
+
     }
 }
 
@@ -369,8 +384,7 @@ sib_pieces construct_sib_from_string(char *sib_instruction_in)
 
 
 
-int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep,
-		      struct instruction_definition *defs)
+int check_instruction(struct instruction_pieces *in, struct instruction_definition *defs)
 {
   /* Now some requirements for instructions will be listed
      - < 2 memory operands 
@@ -378,55 +392,77 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
 
      - If a dependency check fails for a mnemonic, try one of the nearest ones. Likely, lots of them will fail as of now
    */ 
+    char * p = in->instruction_mnemonic;
+  while(*p != 0) *(p++) -= 0x20;
+
+  char copy_of_mnemonic[20] = {0};
+  int length = 0;
+  for (; in->instruction_mnemonic[length] != 0; ++length)
+      copy_of_mnemonic[length] = in->instruction_mnemonic[length];
+
+  int length_poststrip;
+
   unsigned long int ID = name_to_id(in->instruction_mnemonic);
   int index = -1;
+  int strip_iterator = -1;
+strip: strip_iterator++;
   if (!ID)
     {
       ID = name_to_id((in->instruction_mnemonic +8));
-        for (int i = 0; i < 3; ++i)
+        for (; strip_iterator < 3; ++strip_iterator)
 	  {
-	    rip_suffix(in->instruction_mnemonic, i);
+            rip_suffix(in->instruction_mnemonic, strip_iterator);
 	    ID = name_to_id(in->instruction_mnemonic+8);
 	    index = binary_lookup(ID, defs, 1);
 	    if (index != -1)
-	      break; 
+                {
+                    length_poststrip = length -strip_iterator;
+                    break;
+                }
 	  }
     }
+
   else
     {
-      for (int i = 0; i < 3; ++i)
+      for (; strip_iterator < 3; ++strip_iterator)
 	  {
-	    rip_suffix(in->instruction_mnemonic, i);
-	    binary_lookup(ID, defs, 0 );
+            rip_suffix(in->instruction_mnemonic, strip_iterator);
+            ID = name_to_id(in->instruction_mnemonic);
+            index = binary_lookup(ID, defs, 0 );
 	    if (index != -1)
-	      break;
+                {
+                    length_poststrip = length - strip_iterator;
+                    break;
+                }
 	  }
       
     }
 
-  
+  in->size = numbits_from_suffix(in->instruction_mnemonic + length_poststrip);
+  ID = name_to_id(in->instruction_mnemonic);
   if (index == -1)
     {
       fprintf(stderr, "Failure to find a matching mnemonic for the opcode");
       assert(0 == 1);
     }
-  
+
   else if (ID)
     {
 
       // Found in the shorter ones, look at the dependencies for this one and its neighbors
       int valid_neighbors[16] = { 0 };
-      int valid_neighbors_number = 0;
+      int valid_neighbors_number = 1;
+      valid_neighbors[0] = index;
       // Check below
-      for (int i = 0; shorter_mnemonics[index - i] == ID; ++i) // look below thje index
+      for (int i = 0; defs[index - i].mnemonic == ID; ++i) // look below thje index
 	{
           valid_neighbors[i] = index - i;
           valid_neighbors_number++;
 	}
       
-      for (int i = 0; shorter_mnemonics[index + i] == ID; ++i) // look above 
+      for (int i = 0; defs[index + i].mnemonic == ID; ++i) // look above
 	{
-          valid_neighbors[i] = index + i;
+          valid_neighbors[i+valid_neighbors_number ] = index + i;
           valid_neighbors_number++;
 	}
 
@@ -435,13 +471,16 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
 	 {
           // NOT DONE YET
 	  // Will use the dependencies check function for this one
-	   if (assert_dependencies(in, &dep[(valid_neighbors[valid_neighbors_number])]))
+           if (assert_dependencies(in, &defs[(valid_neighbors[iterator])]))
 	   {
 	     return valid_neighbors_number;
 	   }
 	 }
 
-       return -1;
+       if (strip_iterator == 2)
+        return -1;
+       else
+           goto strip;
     }
 
   else
@@ -451,13 +490,13 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
       int valid_neighbors_number = 0;
       
       // Check below
-      for (int i = 0; longer_mnemonics[index - i] == ID; ++i)
+      for (int i = 0; defs[index - i].mnemonic == ID; ++i)
 	{
 	valid_neighbors[valid_neighbors_number++] = index - i;
         
 	}
       // Check above 
-      for (int i = 0; longer_mnemonics[index + i] == ID; ++i)
+      for (int i = 0; defs[index + i].mnemonic == ID; ++i)
 	{
 	valid_neighbors[valid_neighbors_number++] = index + i;
 	}
@@ -468,7 +507,7 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
         {
       
 	  // Will use the dependencies check function for this one
-          if (assert_dependencies(in, &dep[(valid_neighbors[valid_neighbors_number])]))
+          if (assert_dependencies(in, &defs[(valid_neighbors[valid_neighbors_number])]))
 	  {
 	     return valid_neighbors_number; // THE TRUTH
 	  }
@@ -482,7 +521,7 @@ int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_
 }
 
 
-bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies *table_in)
+bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_definition *defs)
 {
   /*
     - Pass the same enum operands
@@ -490,6 +529,8 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
     - Pass the size check 
  
    */
+  struct dependencies * table_in = &defs->requirements;
+
   bool mem_or_reg_1_changed = 0;
   bool mem_or_reg_2_changed = 0;
   bool mem_or_xmm_1_changed = 0;
@@ -561,12 +602,12 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct dependencies
 
 
   
- if (!check_sizes(user_in->op1_size, table_in->allowed_sizes))
+ if (!check_sizes(user_in->size, table_in->allowed_sizes))
     {
       return 0;
     }
   
-  if (!check_sizes(user_in->op2_size, table_in->allowed_sizes))
+  if (!check_sizes(user_in->size, table_in->allowed_sizes))
     {
       return 0;
     }
@@ -625,7 +666,7 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
   else if (string_in[start_index] == '%')
     {
       
-      return type_fallback(string_in + start_index + 1);
+      return user_fallback(string_in + start_index + 1);
     }
 
 
