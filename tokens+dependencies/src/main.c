@@ -8,6 +8,12 @@ int main(int argc, char ** argv)
   
   if (argc < 2)
     printf("Not enough arguments. 2+ needed %d given", argc );
+
+  char dest[100] = "./preprocess ";
+  strcat(dest, argv[1]);
+  system(dest);
+
+
   
   FILE* input_assembly_file = fopen(argv[1], "r");
   if (!input_assembly_file)

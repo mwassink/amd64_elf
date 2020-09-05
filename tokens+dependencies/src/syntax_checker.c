@@ -185,7 +185,7 @@ start_iterator = move_while_general(input_string, start_iterator, ' '); // Mnemo
         if (fgets(input_string, 250, file_in) == NULL)
             {
                 printf("Empty label. Do not do that");
-                exit(1);
+                exit(1); // need to do some cleanup after this
             }
 
       }
