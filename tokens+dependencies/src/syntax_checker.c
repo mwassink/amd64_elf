@@ -450,7 +450,7 @@ strip: strip_iterator++;
     {
 
       // Found in the shorter ones, look at the dependencies for this one and its neighbors
-      int valid_neighbors[16] = { 0 };
+      int valid_neighbors[64] = { 0 };
       int valid_neighbors_number = 1;
       valid_neighbors[0] = index;
       // Check below
@@ -477,7 +477,7 @@ strip: strip_iterator++;
 	   }
 	 }
 
-       if (strip_iterator == 2)
+       if (strip_iterator >= 2)
         return -1;
        else
            goto strip;
