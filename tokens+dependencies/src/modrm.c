@@ -384,7 +384,7 @@ int mod11_r(char* in)
     else
     {
         fprintf(stderr, "Improper usage for the mod11_r");
-        return -1;
+        exit(1);
     }
 
     

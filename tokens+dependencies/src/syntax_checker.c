@@ -355,7 +355,7 @@ sib_pieces construct_sib_from_string(char *sib_instruction_in)
   // This just does the whole sib, knowing that it is an sib
   sib_pieces sib_returned;
   sib_returned.disp_length_in_bytes = check_for_offset(sib_instruction_in, &sib_returned.start_parentheses_index, &sib_returned.disp_value);
-
+fprintf(stdout, "Defaulting to 64 bit with no prefix given");
   int iterator = sib_returned.start_parentheses_index + 1;
 
   iterator = move_to_general(sib_instruction_in, iterator, '%');
@@ -405,6 +405,9 @@ int check_instruction(struct instruction_pieces *in, struct instruction_definiti
   unsigned long int ID = name_to_id(in->instruction_mnemonic);
   int index = -1;
   int strip_iterator = -1;
+
+  in->size = -1; // for now
+
 strip: strip_iterator++;
   if (!ID)
     {
@@ -438,7 +441,30 @@ strip: strip_iterator++;
       
     }
 
-  in->size = numbits_from_suffix(in->instruction_mnemonic + length_poststrip);
+  if (in->size == -1) // If we already have the user requested size, then we do not have to look again
+    in->size = numbits_from_suffix(copy_of_mnemonic + length_poststrip);
+
+  // The size is still not found, so look for the size again
+  if (in->size == -1)
+      {
+        // Perhaps the suffix is added on to the end of the instruction already? Try that
+        // Rip apart the copy, not the original
+          for (int i = 1; i < 4;++i)
+              {
+                  rip_suffix(copy_of_mnemonic, i);
+                  if (numbits_from_suffix(copy_of_mnemonic + length_poststrip - i) != -1)
+                      {
+                          in->size = numbits_from_suffix(copy_of_mnemonic + length_poststrip - i);
+                          break;
+                      }
+              }
+      }
+  if(in->size == -1)
+      {
+          fprintf(stderr, "Could not size up instruction\n");
+          exit(1);
+      }
+
   ID = name_to_id(in->instruction_mnemonic);
   if (index == -1)
     {
@@ -473,7 +499,7 @@ strip: strip_iterator++;
 	  // Will use the dependencies check function for this one
            if (assert_dependencies(in, &defs[(valid_neighbors[iterator])]))
 	   {
-	     return valid_neighbors_number;
+             return valid_neighbors[iterator];
 	   }
 	 }
 

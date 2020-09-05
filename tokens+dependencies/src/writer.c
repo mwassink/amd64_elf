@@ -45,6 +45,8 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 
   
   union operand_types operand1;
+
+
   
   // Switch staement would probably be a better idea 
   if (args_from_the_user.op1 == memory) // there can only be one memory operand
@@ -113,6 +115,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
       operand1.reg_string = args_from_the_user.op1_mnemonic;
       if (table->requirements.one == mem_or_reg)
 	{
+              to_be_written.modrm |= 0xc0;
 	  if (operand1.reg_string[1] == 'e')
 	    {
 	      to_be_written.modrm |=  mod11_e(operand1.reg_string);
@@ -269,9 +272,10 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
   
     else if (args_from_the_user.op2 == reg)
     {
-      operand2.reg_string = args_from_the_user.instruction_mnemonic;
+      operand2.reg_string = args_from_the_user.op2_mnemonic;
       if (table->requirements.two == mem_or_reg)
 	{
+            to_be_written.modrm |= 0xc0;
 	  if (operand2.reg_string[1] == 'e')
 	    {
 	      to_be_written.modrm |=  mod11_e(operand2.reg_string);
@@ -335,7 +339,8 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
        to_be_written.secondary_opcode = table->secondary_opcode;
        to_be_written.so_dirty = 1;
      }
-
+   // Need to call the byte from prefixes to get the right prefixes
+    to_be_written.potential_prefixes = byte_from_prefixes(operand1, operand2, args_from_the_user.op1, args_from_the_user.op2);
    
    return to_be_written;
    
@@ -392,7 +397,8 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in)
 
 
        */
-      
+        if (prev == 1)
+            break;
       
       if (need_to_write.potential_prefixes.addressing_67_prefix)
 	{

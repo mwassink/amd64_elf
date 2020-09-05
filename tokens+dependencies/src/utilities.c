@@ -615,10 +615,11 @@ int fill_string_with_line(int max_size, char * string, FILE *fptr)
 }
 
 
-
-
 int numbits_from_suffix( char * instruction_at_suffix)
 {
+  char * copy = instruction_at_suffix;
+
+  while (*copy != 0) *(copy++) |= 0x20;
   if (instruction_at_suffix[0] == 'd')
     {
       return 32;
@@ -665,11 +666,11 @@ int numbits_from_suffix( char * instruction_at_suffix)
     }
   else
     {
-      fprintf(stdout, "Defaulting to 64 bit with no prefix given");
-      return 64;
+      return -1;
     }
 
-  
+  copy = instruction_at_suffix;
+  while (*copy != 0) *(copy++) &= 0xDF;
 }
 
 int check_for_lock_prefix( char * string, int *start_index)
@@ -699,7 +700,7 @@ int fill_string_until_character(const char *input_string, char *target, int star
 }
 
 prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, enum Basic_Operands type1,
-				 enum Basic_Operands type2, unsigned char * write_spot)
+				 enum Basic_Operands type2)
 {
   // if 32 bits are used to address, then the bit 67 will precede the other prefix
   // There is at most 1 byte that's
@@ -711,7 +712,7 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
 
   // int direction = INSTRUCTION & 2; if this returns true then we know that op1 was for sure a reg where
   // op2 was r/m. op2 would be less significant
-  int iterator = 0;
+
   int start_reg_1 = 0;
   int start_reg_2 = 0;
   if (type1 == memory)
@@ -727,6 +728,7 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
       // need to make sure that this returns something
     }
   
+  start_reg_1++; start_reg_2++;
 
   prefixes returned_prefix;
   returned_prefix.flags = 0;
@@ -735,11 +737,12 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
   switch (type1)// the furthest right with the AT&T syntax, the TARGET
     {
     case memory: // default for the target memory to be 64 bit
-      if (op1.mem_op.string[start_reg_1] == 'e' || (needs_rex_r(op1.mem_op.string + start_reg_1) && op1.mem_op.string[start_reg_1 + 3] == 'd'))
-	write_spot[iterator++] = 0x67;
+      if (op1.mem_op.string[start_reg_1] == 'e' || (needs_rex_r(op1.mem_op.string + start_reg_1) && ((op1.mem_op.string[start_reg_1 + 3] == 'd')
+                                                    || op1.mem_op.string[start_reg_1 + 2])))
+        returned_prefix.addressing_67_prefix = 0x67;
       break;
     case reg:
-      if (op1.reg_string[0] == 'r')
+      if (op1.reg_string[1] == 'r')
 	returned_prefix.flags |= 0x48;
       if (needs_rex_r(op1.mem_op.string))
 	returned_prefix.flags |= 0x44;
@@ -754,18 +757,14 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
   switch (type2)
     {
     case memory:
-      if (op2.mem_op.string[start_reg_2] == 'r' || (needs_rex_r(op2.mem_op.string + start_reg_1) && op2.mem_op.string[start_reg_1 + 3] == 'd'))
+      if (op2.mem_op.string[start_reg_2] == 'e' || (needs_rex_r(op2.mem_op.string + start_reg_1) && ((op2.mem_op.string[start_reg_1 + 3] == 'd')
+                                                    || op2.mem_op.string[start_reg_1 + 2] == 'd')))
 	{
-	  if (iterator > 0)
-	    {
-	      unsigned char temp = write_spot[0];
-	      write_spot[0] = 0x67;
-	      write_spot[1] = temp;
-	    }
+	  returned_prefix.addressing_67_prefix = 0x67;
 	}
       break;
     case reg:
-      if (op1.reg_string[0] == 'r')
+      if (op1.reg_string[1] == 'r')
 	{
 	  returned_prefix.flags |= 0x48;
 	}
