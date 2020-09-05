@@ -249,19 +249,19 @@ void switch_on_possible_sizes(int in, struct available_sizes *sizes_in)
     case 0:
       return;
     case 8:
-      sizes_in->one_byte = true;
+      sizes_in->one_byte = 1;
       return;
     case 16:
-      sizes_in->byte_2 = true;
+      sizes_in->byte_2 = 1;
       return;
     case 32:
-      sizes_in->byte_4 = true;
+      sizes_in->byte_4 = 1;
       return;
     case 64:
-      sizes_in->byte_8 = true;
+      sizes_in->byte_8 = 1;
       return;
     case 128:
-      sizes_in->byte_16 = true;
+      sizes_in->byte_16 = 1;
       return;
     }
 }
@@ -271,8 +271,7 @@ void switch_on_possible_sizes(int in, struct available_sizes *sizes_in)
 void fill_possible_sizes(struct available_sizes *sizes_in, char * instruction_in)
 {
   
-  sizes_in->one_byte = 0; sizes_in->byte_high = 0; sizes_in->byte_16 = 0;
-  sizes_in->byte_2 = 0; sizes_in->byte_4 = 0; sizes_in->byte_8 = 0;
+
 
   int * array = possible_sizes(instruction_in);
   
@@ -367,10 +366,15 @@ enum Basic_Operands user_fallback(const char * in)
 
 enum Basic_Operands type_fallback(const char * in)
 {
-  char type[6] = {0};
+    // very unfortunate, but not much time and avoids compiler errors
+    char type[8] = {0};
+
+
+
   int iterator = 0;
 
-
+  for(; in[iterator] != 0; ++iterator)
+      type[iterator] = in[iterator];
 
   if (in[0] == 0) {
     return no_operand;

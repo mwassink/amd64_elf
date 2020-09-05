@@ -31,7 +31,10 @@ bool fill_dependencies ( struct instruction_format *instr_format, struct depende
       return 1;
     }
   
-
+  deps->allowed_sizes.one_byte = 0; deps->allowed_sizes.byte_high = 0;
+  deps->allowed_sizes.byte_16 = 0;
+  deps->allowed_sizes.byte_2 = 0; deps->allowed_sizes.byte_4 = 0;
+  deps->allowed_sizes.byte_8 = 0;
 
   fill_possible_sizes(&deps->allowed_sizes, instr_format->op1);
   fill_possible_sizes(&deps->allowed_sizes, instr_format->op2);

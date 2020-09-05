@@ -113,10 +113,10 @@ struct instruction_definition
   // These are not unique and do not change with user input
   struct dependencies requirements;
   unsigned long int mnemonic; // Useful for finding the instruction
-  char prefix; // Useful for writing this, whether it has a prerfix or not
-  char opcode; // necessary for writing the opcode into the file
-  char secondary_opcode; // Necessary if this is included
-  char prefix_OF; // Don't do a bool just the prefix
+  unsigned char prefix; // Useful for writing this, whether it has a prerfix or not
+  unsigned char opcode; // necessary for writing the opcode into the file
+  unsigned char secondary_opcode; // Necessary if this is included
+  unsigned char prefix_OF; // Don't do a bool just the prefix
   bool long_mnemonic;
   bool not_supported;
   

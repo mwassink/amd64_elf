@@ -190,10 +190,45 @@ start_iterator = move_while_general(input_string, start_iterator, ' '); // Mnemo
 
       }
 
+    bool paren_found = 0;
 
+  start_iterator = move_while_general(input_string, start_iterator, ' ');
+  for(int i = 0; input_string[start_iterator] != ' '; ++start_iterator, ++i)
+      {
+        arguments->instruction_mnemonic[i] = input_string[start_iterator];
+      }
 
-  sscanf(input_string, "%*[\t\r \n]%s%*[\t\r \n]%s%*[\t\r\n ,]%s", arguments->instruction_mnemonic, arguments->op2_mnemonic
-         , arguments->op1_mnemonic );
+  start_iterator = move_while_general(input_string, start_iterator, ' ');
+  int op2_iterator = 0;
+  for (;  input_string[start_iterator] != ','; ++start_iterator, ++op2_iterator)
+      {
+          arguments->op2_mnemonic[op2_iterator] = input_string[start_iterator];
+          if (input_string[start_iterator] == '(')
+              {
+                  paren_found = 1;
+              }
+      }
+  if (!paren_found)
+      {
+          // read and discard up to the next qualifier
+          ++start_iterator; // move PAST the comma
+          sscanf(input_string + start_iterator, "%s", arguments->op1_mnemonic);
+
+      }
+  else
+      {
+          // read in the rest of this until a closing paren
+          for (; input_string[start_iterator] != ')'; ++start_iterator, ++op2_iterator)
+              arguments->op2_mnemonic[op2_iterator] = input_string[start_iterator];
+          arguments->op2_mnemonic[op2_iterator] = ')';
+          // move to the comma
+          start_iterator = move_to_general(input_string, start_iterator, ','); ++start_iterator; // move PAST the comma
+          // move until whitespace is over
+          start_iterator = move_while_general(input_string, start_iterator, ' ');
+          int op1_iterator = 0;
+          for (; input_string[start_iterator] != 0; ++start_iterator, ++op1_iterator)
+              arguments->op1_mnemonic[op1_iterator] = input_string[start_iterator];
+      }
 
 
   
@@ -442,7 +477,7 @@ strip: strip_iterator++;
     }
 
   if (in->size == -1) // If we already have the user requested size, then we do not have to look again
-    in->size = numbits_from_suffix(copy_of_mnemonic + length_poststrip);
+    in->size = numbits_from_suffix(copy_of_mnemonic + length_poststrip+1);
 
   // The size is still not found, so look for the size again
   if (in->size == -1)
@@ -504,7 +539,10 @@ strip: strip_iterator++;
 	 }
 
        if (strip_iterator >= 2)
-        return -1;
+        {
+            printf("Could not find instruction");
+            assert(0 ==1);
+         }
        else
            goto strip;
     }
@@ -561,7 +599,8 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
   bool mem_or_reg_2_changed = 0;
   bool mem_or_xmm_1_changed = 0;
   bool mem_or_xmm_2_changed = 0;
-
+  bool sib1_changed    = 0;
+  bool sib2_changed = 0; // needs to pass dependency check now and reverted
   
   if (table_in->one == mem_or_reg)
     {
@@ -606,7 +645,16 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
 	 return 0;
      }
   
-  
+    if (user_in->op1 == sib)
+        {
+            user_in->op1 = memory;
+            sib1_changed = 1;
+        }
+    if (user_in->op2 == sib)
+        {
+          user_in->op2 = memory;
+          sib2_changed = 1;
+        }
   if (user_in->wants_lock && !(table_in->lockable)) // Failure, return a zero
     {
       return 0;
@@ -646,7 +694,10 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
     table_in->one = xmm_or_mem;
   if (mem_or_xmm_2_changed)
     table_in->two = xmm_or_mem;
-    
+  if(sib1_changed)
+        user_in->op1 = sib;
+  if (sib2_changed)
+        user_in->op2 = sib;
   
   return 1;
 }
@@ -661,7 +712,7 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
   
 
   
-  if (string_in[start_index] == '(')
+  if (string_in[start_index] == '(' || (string_in[start_index] > 47 && string_in[start_index] < 58))
     {
       int reg_counter = 0;
       for (; string_in[start_index] != ')'; ++start_index)

@@ -11,7 +11,7 @@ int main(int argc, char **argv )
   
   FILE * input_file = fopen(argv[1], "r");
 
-  unsigned char *buffer = malloc(200000);
+  unsigned char *buffer = calloc(200000,1);
   unsigned long int new_length = 0;
   if (input_file != NULL)
     {
@@ -49,11 +49,12 @@ int main(int argc, char **argv )
   
  strip_end: if (buffer[new_length - 1] == '\n' || buffer[new_length - 1] == ' ' || buffer[new_length - 1] == '\t')
     {
+      buffer[new_length - 1] = 0;
       new_length--;
       goto strip_end;
     }
 
-  
+  buffer[new_length ] = '\n';
 
   fwrite(buffer + step, sizeof(char), new_length, output_file);
   
