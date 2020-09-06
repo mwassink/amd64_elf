@@ -441,14 +441,14 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in)
 	  symbols_in->bytes_written++;
 	}
 
-      if ((need_to_write.modrm >> 30) == 1)
+      if ((need_to_write.modrm >> 6) == 1)
 	{
 	  // Mod 10
 	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.displacement;
 	  symbols_in->bytes_written++;
 	}
 
-      if ((need_to_write.modrm >>30) == 2)
+      if ((need_to_write.modrm >>6) == 2)
 	{
 	  int * write_spot = (int *)&symbols_in->instructions[symbols_in->bytes_written];
 	  *write_spot = need_to_write.displacement;
