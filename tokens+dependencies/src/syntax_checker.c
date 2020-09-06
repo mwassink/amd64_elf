@@ -390,16 +390,16 @@ sib_pieces construct_sib_from_string(char *sib_instruction_in)
   // This just does the whole sib, knowing that it is an sib
   sib_pieces sib_returned;
   sib_returned.disp_length_in_bytes = check_for_offset(sib_instruction_in, &sib_returned.start_parentheses_index, &sib_returned.disp_value);
-fprintf(stdout, "Defaulting to 64 bit with no prefix given");
-  int iterator = sib_returned.start_parentheses_index + 1;
 
-  iterator = move_to_general(sib_instruction_in, iterator, '%');
-  sib_returned.base_index = iterator;
+  int iterator = move_to_general(sib_instruction_in, 0, '%');
+
+
+  sib_returned.base_index = iterator; iterator++;
 
   iterator = move_to_general(sib_instruction_in, iterator, '%');
   sib_returned.index_index = iterator;
 
-  iterator = move_to_general(sib_instruction_in, iterator, ',');
+  iterator = move_to_general(sib_instruction_in, iterator, ','); iterator++;
   while (sib_instruction_in[iterator] == ' ')
     {
       iterator++;
@@ -534,7 +534,7 @@ strip: strip_iterator++;
 	  // Will use the dependencies check function for this one
            if (assert_dependencies(in, &defs[(valid_neighbors[iterator])]))
 	   {
-             return valid_neighbors[iterator];
+              return valid_neighbors[iterator];
 	   }
 	 }
 

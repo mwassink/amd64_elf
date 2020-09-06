@@ -21,7 +21,7 @@ int main(int argc, char **argv )
 
   buffer[new_length] = 0;
   
-  printf("%ld", new_length);
+  
 
   int read_iterator = 0;
   

@@ -107,7 +107,7 @@ unsigned char make_sib_byte(struct sib sib_operand)
     to_be_returned |= sib_rexr_table_base(sib_operand.operand + sib_operand.base_index, sib_operand.disp_length_in_bytes);
 
   else
-    to_be_returned |= sib_rexr_table_base(sib_operand.operand + sib_operand.base_index, sib_operand.disp_length_in_bytes);
+    to_be_returned |= sib_regular_table_base(sib_operand.operand + sib_operand.base_index, sib_operand.disp_length_in_bytes);
   
   return to_be_returned;
 }

@@ -38,8 +38,15 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
           goto top;
       }
   memset((void *)&to_be_written,0 ,  sizeof(to_be_written));
-  table += check_instruction(&args_from_the_user,  table);
+  int index = check_instruction(&args_from_the_user,  table);
 
+  if (index == -1)
+      {
+          printf("No valid instruction found");
+          exit(1)
+                  ;
+      }
+  table += index;
   //int check_instruction(struct instruction_pieces *in, unsigned long int *shorter_mnemonics, unsigned long int *longer_mnemonics, struct dependencies *dep,
   //struct instruction_definition *defs)
 
@@ -434,14 +441,14 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in)
 	  symbols_in->bytes_written++;
 	}
 
-      if ((need_to_write.modrm >> 30) == 2)
+      if ((need_to_write.modrm >> 30) == 1)
 	{
 	  // Mod 10
 	  symbols_in->instructions[symbols_in->bytes_written] = need_to_write.displacement;
 	  symbols_in->bytes_written++;
 	}
 
-      if ((need_to_write.modrm >>30) == 3)
+      if ((need_to_write.modrm >>30) == 2)
 	{
 	  int * write_spot = (int *)&symbols_in->instructions[symbols_in->bytes_written];
 	  *write_spot = need_to_write.displacement;
