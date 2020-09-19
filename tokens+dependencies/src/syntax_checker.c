@@ -200,7 +200,8 @@ start_iterator = move_while_general(input_string, start_iterator, ' '); // Mnemo
 
   start_iterator = move_while_general(input_string, start_iterator, ' ');
   int op2_iterator = 0;
-  for (;  input_string[start_iterator] != ','; ++start_iterator, ++op2_iterator)
+  for (;  input_string[start_iterator] != ',' && input_string[start_iterator] != '\n'
+       && input_string[start_iterator] != '#'; ++start_iterator, ++op2_iterator)
       {
           arguments->op2_mnemonic[op2_iterator] = input_string[start_iterator];
           if (input_string[start_iterator] == '(')
@@ -236,6 +237,15 @@ start_iterator = move_while_general(input_string, start_iterator, ' '); // Mnemo
 
   
   arguments->op1 = user_string_to_operand(arguments->op1_mnemonic,0);
+
+  if (arguments->op1 == no_operand && arguments->op2 != no_operand) // this is a problem from the order in which they were added
+    {
+      // when the first string is read in, it takes in the first as op2, but the table will only have one op
+      // this means that the table will take op1 as input rather than changing it
+      arguments->op1 = arguments->op2;
+      arguments->op2 = no_operand;
+      strcpy(arguments->op1_mnemonic, arguments->op2_mnemonic);
+    }
 
 
 
@@ -752,10 +762,10 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
       return immediate;
     }
 
+
   else
     {
-      fprintf(stderr, "operand not found" );
-      assert( 0 == 1);
+      return no_operand;
     }
   
 }

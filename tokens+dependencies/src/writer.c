@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "../include/customtypes.h"
 #include "../include/convert_instruction.h"
-#include "../include/machine_instructions.h"
 #include "../include/modrm.h"
 #include "../include/sib.h"
 #include "../include/syntax_checker.h"
@@ -477,6 +476,8 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in)
       
       
     }
+
+  free(table);
 
   return 0;
 }

@@ -288,7 +288,7 @@ void fill_possible_sizes(struct available_sizes *sizes_in, char * instruction_in
 
 bool check_for_segment_register(char *reg)
 {
-  // Compilers like to use the stack registers
+  // Compilers like to use the segment registers
   short int* ptr = (short int*)reg;
   if (sizeof (*ptr) == 2)
     {
@@ -383,7 +383,7 @@ enum Basic_Operands type_fallback(const char * in)
 
 
     
-  while (in[iterator] != 0 && (in[iterator] > 57 && in[iterator] < 48)) // not a number or a zero
+  while (in[iterator] != 0 && (in[iterator] > 57 || in[iterator] < 48)) // not a number or a zero
     {
       type[iterator] = in[iterator];
     }
