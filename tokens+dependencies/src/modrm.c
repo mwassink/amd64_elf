@@ -469,12 +469,12 @@ int mod11_rex(char* in)
     // This one requires one of the newer registers (extensions)
     // r8, r9, r10, etc
     // Move to the front of the word with the )
-
+    char *init = in;
     int disp = 0;
-    while (in[disp++] != ')'); // will overshoot by one
-    disp--;
-    in[disp] = 0; // Now everything after the number will be null terminated
-    return atoi(++in); // Hopefully this will be passed in with the percent sign coming first
+    while (*in == '%' || *in == 'r') in++; // will overshoot by one
+    disp = in - init;
+    sscanf(in, "%d", &disp);
+    return disp - 8; // Hopefully this will be passed in with the percent sign coming first
     
 }
 

@@ -37,6 +37,31 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
           goto top;
       }
   memset((void *)&to_be_written,0 ,  sizeof(to_be_written));
+  // Support for push instructions for rbp
+  if (!strcmp(args_from_the_user.instruction_mnemonic, "push")) {
+       if (!strcmp(args_from_the_user.op1_mnemonic, "%rbp ")) {
+          memset(&to_be_written, 0, sizeof(to_be_written));
+          to_be_written.primary_opcode = 0x55;
+          return to_be_written;
+        }
+
+  }
+
+  if (!strcmp(args_from_the_user.instruction_mnemonic, "pop")) {
+       if (!strcmp(args_from_the_user.op1_mnemonic, "%rbp")) {
+          memset(&to_be_written, 0, sizeof(to_be_written));
+          to_be_written.primary_opcode = 0x5d;
+          return to_be_written;
+        }
+
+  }
+
+  if (!strcmp(args_from_the_user.instruction_mnemonic, "ret")) {
+          memset(&to_be_written, 0, sizeof(to_be_written));
+          to_be_written.primary_opcode = 0xc3;
+          return to_be_written;
+      }
+
   int index = check_instruction(&args_from_the_user,  table);
 
   if (index == -1)
@@ -70,12 +95,12 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
       else if (operand1.mem_op.disp_length == 1)
 	{
 	  to_be_written.modrm |= 0x40; //set bit 6
-	  to_be_written.modrm |= mod10_01_table(operand1.mem_op.string);
+          to_be_written.modrm |= mod10_01_table(operand1.mem_op.string + operand1.mem_op.first_paren_offset);
 	}
       else if (operand1.mem_op.disp_length == 4)
 	{
 	  to_be_written.modrm |= 0x80; // set bit 7. the most important bit
-	  to_be_written.modrm |= mod10_01_table(operand1.mem_op.string);
+          to_be_written.modrm |= mod10_01_table(operand1.mem_op.string + operand1.mem_op.first_paren_offset);
 	}
       else
 	fprintf(stderr, "Failure with the calculation of offset. Incorrect value returned or function never called");
@@ -217,12 +242,13 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
       if (table->requirements.allowed_sizes.byte_8)
 	{
 	  size_immediate = 64; // bits
-	  fprintf(stderr, "There should not be an immediate of size 64 bits"); 
+          //fprintf(stderr, "There should not be an immediate of size 64 bits\n");
+          goto down_size;
 	}
       else if (table->requirements.allowed_sizes.byte_4)
 	{
 	  
-	  to_be_written.immediate = operand2.immediate;
+          down_size: to_be_written.immediate = operand2.immediate;
 	  to_be_written.immediate_max_size = 32;
 	}
       else if (table->requirements.allowed_sizes.byte_2)
@@ -355,7 +381,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 
 
 
-int  writer( FILE* user_file, struct symbols_information *symbols_in)
+int  writer( FILE* user_file, struct symbols_information *symbols_in, int *offArr)
 {
 
 
@@ -378,6 +404,7 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in)
 
   fread(table, sizeof(for_size), 1074, read_init);
   bool prev = 0;
+  int off_iter = 0;
   while (!prev)
     {
 #if debug
@@ -405,7 +432,7 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in)
        */
         if (prev == 1)
             break;
-      
+       int prev_bytes_written = symbols_in->bytes_written;
       if (need_to_write.potential_prefixes.addressing_67_prefix)
 	{
 	  symbols_in->instructions[symbols_in->bytes_written] = 0x67;
@@ -471,8 +498,8 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in)
 	    
 	}
       
-      
-      
+        int newer_bytes_written = symbols_in->bytes_written - prev_bytes_written;
+        offArr[off_iter++] = newer_bytes_written;
       
       
     }

@@ -12,7 +12,7 @@ int main(int argc, char ** argv)
   char dest[100] = "./preprocess ";
   strcat(dest, argv[1]);
   system(dest);
-
+  int offArr[200] = {0};
 
   
   FILE* input_assembly_file = fopen(argv[1], "r");
@@ -34,12 +34,22 @@ int main(int argc, char ** argv)
       printf("other options:\n -p: print opcodes");
     }
 
-  writer(input_assembly_file, &symbols);
-
+   writer(input_assembly_file, &symbols, offArr);
+   int off_ctr = 0;
+   for (int i = 0; i < 200; ++i) {
+       if (offArr[i] == 0) break;
+       off_ctr++;
+    }
   // Print the bytes from the assembly. Hopefully this will work
-  for (int i = 0; i < symbols.bytes_written; ++i)
+   int tot_counter = 0;
+   printf("\n");
+  for (int i = 0; i < off_ctr; ++i)
     {
-      printf("%x ", symbols.instructions[i]);
+      for (int k = 0; k < offArr[i]; ++k) {
+        printf("%x ", symbols.instructions[tot_counter]);
+        tot_counter++;
+      }
+      printf("\n");
     }
   
 }

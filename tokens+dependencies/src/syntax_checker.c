@@ -151,6 +151,15 @@ int search_line(FILE * file_in, struct instruction_pieces *arguments, struct sym
     {
       return 2;
     }
+  char *strng = input_string;
+  int offs = move_while_general(strng, 0, ' ');
+  if (!strcmp(strng + offs, "ret")) { // this takes no args
+    arguments->instruction_mnemonic[0] = 'r';
+    arguments->instruction_mnemonic[1] = 'e';
+    arguments->instruction_mnemonic[2] = 't';
+    arguments->instruction_mnemonic[3] = 0;
+    return 0;
+  }
   enum section_types type = check_for_section_label(input_string, &line_iterator );
 
   if (type != text && type != none )
@@ -165,7 +174,7 @@ int search_line(FILE * file_in, struct instruction_pieces *arguments, struct sym
   
   int start_iterator = check_for_jump_label( input_string, symbols);
 
-  if (start_iterator) // the start iterator is not zero, label found
+  if (start_iterator != -1) // the start iterator is not zero, label found
     {
       symbols->corresponding_starts_for_labels[symbols->current_label_index] = symbols->bytes_written;
       //fill the label starting at 0, going until start_iterator
@@ -176,7 +185,7 @@ int search_line(FILE * file_in, struct instruction_pieces *arguments, struct sym
       symbols->current_label_index++;
       
     }
-
+    if (start_iterator == -1) start_iterator = 0;
 start_iterator = move_while_general(input_string, start_iterator, ' '); // Mnemonic comes next, hopefully
 
   if (input_string[start_iterator] == '\n') // this is fine we can just wait until the next non-space
@@ -364,11 +373,12 @@ int check_for_offset(char * string, int *start_parentheses, int *disp_value)
 	return 1;
     }
 
-  else if  (string[0] >= 48 && string[0] < 58)
+  else if  ((string[0] >= 48 && string[0] < 58) || string[0] == '-')
     {
       // This is just a decimal offset
+      if (string[0] == '-') string++;
       *disp_value = ascii_to_int(string, start_parentheses);
-      if (*disp_value < 255)
+      if (*disp_value < 128)
 	    {
 	      return 1;
 	    }
@@ -390,8 +400,14 @@ regular_memory_operand construct_memory_operand(char * memory_instruction_in) //
    // This does just a regular memory
    
    regular_memory_operand mem_operand;
-
+   char copy[20] = {0};
    mem_operand.disp_length = check_for_offset(memory_instruction_in, &mem_operand.first_paren_offset, &mem_operand.disp);
+   mem_operand.first_paren_offset = move_to_general(memory_instruction_in, 0, '%');
+   strcpy(copy, memory_instruction_in);
+   copy[mem_operand.first_paren_offset] = 0;
+   mem_operand.disp = atoi(copy);
+   strcpy(mem_operand.string, memory_instruction_in );
+
    return mem_operand;
 }
 
@@ -437,7 +453,8 @@ int check_instruction(struct instruction_pieces *in, struct instruction_definiti
 
      - If a dependency check fails for a mnemonic, try one of the nearest ones. Likely, lots of them will fail as of now
    */ 
-    char * p = in->instruction_mnemonic;
+
+  char * p = in->instruction_mnemonic;
   while(*p != 0) *(p++) -= 0x20;
 
   char copy_of_mnemonic[20] = {0};
@@ -507,7 +524,7 @@ strip: strip_iterator++;
   if(in->size == -1)
       {
           fprintf(stderr, "Could not size up instruction\n");
-          exit(1);
+         exit(1);
       }
 
   ID = name_to_id(in->instruction_mnemonic);
@@ -522,18 +539,18 @@ strip: strip_iterator++;
 
       // Found in the shorter ones, look at the dependencies for this one and its neighbors
       int valid_neighbors[64] = { 0 };
-      int valid_neighbors_number = 1;
+      int valid_neighbors_number = 0;
       valid_neighbors[0] = index;
       // Check below
       for (int i = 0; defs[index - i].mnemonic == ID; ++i) // look below thje index
 	{
-          valid_neighbors[i] = index - i;
+          valid_neighbors[valid_neighbors_number] = index - i;
           valid_neighbors_number++;
 	}
       
       for (int i = 0; defs[index + i].mnemonic == ID; ++i) // look above
 	{
-          valid_neighbors[i+valid_neighbors_number ] = index + i;
+          valid_neighbors[valid_neighbors_number ] = index + i;
           valid_neighbors_number++;
 	}
 
@@ -719,10 +736,11 @@ enum Basic_Operands user_string_to_operand(const char *string_in, int start_inde
 
   
   // Needs to be called after the offset is checked for
-  
+
 
   
-  if (string_in[start_index] == '(' || (string_in[start_index] > 47 && string_in[start_index] < 58))
+  if (string_in[start_index] == '(' || (string_in[start_index] > 47 && string_in[start_index] < 58) ||
+          string_in[start_index] == '-')
     {
       int reg_counter = 0;
       for (; string_in[start_index] != ')'; ++start_index)
