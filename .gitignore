@@ -1,7 +1,7 @@
 builds/
 test_files/
 builds
-*.txt
+.txt
 *.make
 *.internal
 *.cmake
