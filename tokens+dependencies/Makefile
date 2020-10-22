@@ -40,3 +40,7 @@ amd64_elf: main.o writer.o syntax_checker.o utilities.o sib.o modrm.o
 	@echo "Linking Objects"
 	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
 	$(RM) $^ 
+
+preprocess: preprocess.o 
+	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
+	$(RM) $^ 
