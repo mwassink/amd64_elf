@@ -388,14 +388,18 @@ int  writer( FILE* user_file, struct symbols_information *symbols_in, int *offAr
   
   // Construct file pointer to start reading the file 
 
-  FILE * read_init = fopen("converted_instructions.bin", "rb");
+  FILE * read_init = fopen("../data/converted_instructions.bin", "rb");
 
   if (!read_init)
       {
           exit(1);
           printf("Could not find data directory. Please make sure that the program is being run");
-          printf("In the bin directory with the file structure intact");
+          printf("in the bin directory with the file structure intact");
           read_init = fopen("data/converted_instructions.bin", "rb");
+		  if (!read_init) {
+			  printf("Could not find the table file\n");
+			  exit(1);
+		  }
       }
   
 
