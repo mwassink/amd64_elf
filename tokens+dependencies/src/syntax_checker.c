@@ -628,7 +628,11 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
   bool mem_or_xmm_2_changed = 0;
   bool sib1_changed    = 0;
   bool sib2_changed = 0; // needs to pass dependency check now and reverted
-  
+
+  enum Basic_Operands copy1 = user_in->op1;
+  enum Basic_Operands copy2 = user_in->op2;
+  enum Basic_Operands tablecopy1 = table_in->one;
+  enum Basic_Operands tablecopy2 = table_in->two;
   if (table_in->one == mem_or_reg)
     {
       mem_or_reg_1_changed = 1;
@@ -637,17 +641,19 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
       else if (user_in->op1 == reg)
 	table_in->one = reg;
       else
-	return 0;
+        goto fail;
     }
    if (table_in->two == mem_or_reg)
     {
       mem_or_reg_2_changed = 1;
       if (user_in->op2 == memory)
 	table_in->two = memory;
+      else if (user_in->op2 == sib)
+        table_in->two = memory;
       else if (user_in->op2 == reg)
 	table_in->two = reg;
       else
-	return 0;
+        goto fail;
     }
 
    if (table_in->one == xmm_or_mem)
@@ -658,7 +664,7 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
        else if (user_in->op1 == memory)
 	 table_in->one = memory;
        else
-	 return 0;
+         goto fail;
      }
 
     if (table_in->two == xmm_or_mem)
@@ -669,7 +675,7 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
        else if (user_in->op2 == memory)
 	 table_in->two = memory;
        else
-	 return 0;
+         goto fail;
      }
   
     if (user_in->op1 == sib)
@@ -684,7 +690,7 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
         }
   if (user_in->wants_lock && !(table_in->lockable)) // Failure, return a zero
     {
-      return 0;
+      goto fail;
     }
 
   
@@ -692,12 +698,12 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
   
   if (user_in->op1 != table_in->one)
     {
-      return 0;
+      goto fail;
     }
 
   if (user_in->op2 != table_in->two)
     {
-      return 0;
+      goto fail;
     }
 
 
@@ -705,12 +711,12 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
   
  if (!check_sizes(user_in->size, table_in->allowed_sizes))
     {
-      return 0;
+      goto fail;
     }
   
   if (!check_sizes(user_in->size, table_in->allowed_sizes))
     {
-      return 0;
+      goto fail;
     }
 
   if (mem_or_reg_1_changed)
@@ -721,12 +727,19 @@ bool assert_dependencies(struct instruction_pieces *user_in, struct instruction_
     table_in->one = xmm_or_mem;
   if (mem_or_xmm_2_changed)
     table_in->two = xmm_or_mem;
-  if(sib1_changed)
-        user_in->op1 = sib;
-  if (sib2_changed)
-        user_in->op2 = sib;
+
+  user_in->op1 = copy1;
+  user_in->op2 = copy2;
+  table_in->one = tablecopy1;
+  table_in->two = tablecopy2;
   
   return 1;
+
+  fail: user_in->op1 = copy1;
+        user_in->op2 = copy2;
+        table_in->one = tablecopy1;
+        table_in->two = tablecopy2;
+        return 0;
 }
 
  

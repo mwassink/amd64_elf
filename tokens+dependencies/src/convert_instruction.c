@@ -64,7 +64,7 @@ void convert_instruction(struct instruction_definition *definition, struct instr
   definition->prefix = format->prefix;
   definition->requirements.highest_ring = format->ring_level;
   definition->prefix_OF = format->prefix_OF;
-  
+  definition->r = format->reg_opcode_field;
   
 
   

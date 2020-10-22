@@ -40,10 +40,7 @@ void byte_from_sib_part(const char * in, prefixes *prefix)
   // First look for the first register
   // if the 32 bit registers are used for the sib, then 67 will prefix the whole instruction
   // W not needed because SIB is only used for the addressing and not the register size
-  
-  
-  
-  
+
   int start_iterator = 0;
   start_iterator = move_to_general(in,  start_iterator, '%'); start_iterator++; // Now in the right spot for the BASE
   if (in[start_iterator] == 'e')
@@ -737,7 +734,7 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
   prefixes returned_prefix;
   returned_prefix.flags = 0;
   returned_prefix.addressing_67_prefix = 0;
-  
+  char last = 0; char *cptr;
   switch (type1)// the furthest right with the AT&T syntax, the TARGET
     {
     case memory: // default for the target memory to be 64 bit
@@ -746,10 +743,13 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
         returned_prefix.addressing_67_prefix = 0x67;
       break;
     case reg:
-      if (op1.reg_string[1] == 'r')
+      last = 0; cptr = op1.reg_string;
+      while (*cptr != 0) last = *cptr++;
+      if (op1.reg_string[1] == 'r' && ((!(last < 48 || last > 57) && needs_rex_r(op1.reg_string))
+              || !needs_rex_r(op1.reg_string)))
 	returned_prefix.flags |= 0x48;
-      if (needs_rex_r(op1.mem_op.string))
-	returned_prefix.flags |= 0x44;
+      if (needs_rex_r(op1.reg_string))
+        returned_prefix.flags |= 0x41;
       break;
     case sib: // hassle call the sib function
       byte_from_sib_part(op1.sib_op.operand, &returned_prefix); // this will be in the right order
@@ -768,15 +768,16 @@ prefixes byte_from_prefixes(union operand_types op1, union operand_types op2, en
 	}
       break;
     case reg:
-      if (op1.reg_string[1] == 'r')
-	{
-	  returned_prefix.flags |= 0x48;
-	}
-      if (needs_rex_r(op1.mem_op.string))
+      last = 0; cptr = op2.reg_string;
+      while (*cptr != 0) last = *cptr++;
+      if (op2.reg_string[1] == 'r' && ((!(last < 48 || last > 57) && needs_rex_r(op2.reg_string))
+              || !needs_rex_r(op2.reg_string)))
+        returned_prefix.flags |= 0x48;
+      if (needs_rex_r(op2.reg_string))
 	returned_prefix.flags |= 0x44;
       break;
     case sib: // this is fine now
-      byte_from_sib_part(op1.sib_op.operand, &returned_prefix);
+      byte_from_sib_part(op2.sib_op.operand, &returned_prefix);
       break;
     default:
       break; // for the compiler to stop

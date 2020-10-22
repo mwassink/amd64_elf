@@ -82,6 +82,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
   // Switch staement would probably be a better idea 
   if (args_from_the_user.op1 == memory) // there can only be one memory operand
     {
+      to_be_written.modrm_dirty = 1;
       operand1.mem_op = construct_memory_operand(args_from_the_user.op1_mnemonic);
       // Now need to first look for the displacement
       if (operand1.mem_op.disp_length == 0)  // do nothing mod should be 0
@@ -142,6 +143,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
   
   else if (args_from_the_user.op1 == reg)
     {
+      if (args_from_the_user.op2 == immediate) to_be_written.modrm |= 0xc0;
       to_be_written.modrm_dirty = 1;
       operand1.reg_string = args_from_the_user.op1_mnemonic;
       if (table->requirements.one == mem_or_reg)
@@ -268,6 +270,10 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 	  fprintf(stderr, "Error with definition from the input file");
 	  assert(0 ==1);
 	}
+      if (table->r != 0)
+      to_be_written.modrm |= (table->r <<3); // r goes into the reg opcode fields
+      else
+        to_be_written.primary_opcode += ((to_be_written.modrm & 0x38) >> 3);//
       // This will come last 
     }
 
@@ -365,7 +371,7 @@ potential_writes write_instruction_opcode_from_line( struct instruction_definiti
 
    if (table->prefix_OF)
      to_be_written.prefix_OF = table->prefix_OF;
-   to_be_written.primary_opcode = table->opcode;
+   to_be_written.primary_opcode += table->opcode;
    if (table->secondary_opcode)
      {
        to_be_written.secondary_opcode = table->secondary_opcode;

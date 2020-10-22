@@ -117,6 +117,7 @@ struct instruction_definition
   unsigned char opcode; // necessary for writing the opcode into the file
   unsigned char secondary_opcode; // Necessary if this is included
   unsigned char prefix_OF; // Don't do a bool just the prefix
+  unsigned char r;
   bool long_mnemonic;
   bool not_supported;
   
