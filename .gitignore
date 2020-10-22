@@ -5,7 +5,6 @@ builds
 *.make
 *.internal
 *.cmake
-*.bin
 *.marks
 tokens+dependencies/.vs/
 tokens+dependencies/.vs
