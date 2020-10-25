@@ -4,7 +4,7 @@
 
 In order to build, use the makefile included, which builds with basic args.
 
-- cd tokens+dependencies
+- cd opcodes
 - mkdir bin 
 - mkdir objects
 - make preprocessor
