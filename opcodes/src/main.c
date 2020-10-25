@@ -42,7 +42,7 @@ int main(int argc, char ** argv)
     }
   // Print the bytes from the assembly. Hopefully this will work
    int tot_counter = 0;
-   printf("\n");
+   printf("Opcodes: \n");
   for (int i = 0; i < off_ctr; ++i)
     {
       for (int k = 0; k < offArr[i]; ++k) {
