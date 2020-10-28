@@ -12,3 +12,4 @@ In order to build, use the makefile included, which builds with basic args.
 
 - Example runs are included in opcodes/examples with the at&t assembly and the output if something goes wrong.
 - Output may differ from an objdump of the same  instructions assembled with 'as' because mapping is not one to one for certain instructions
+- Based off of reference tables from http://ref.x86asm.net/
