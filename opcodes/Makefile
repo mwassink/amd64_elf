@@ -9,8 +9,9 @@ vpath %.h include
 vpath %.o objects
 
 %.o: %.c
-	@echo "Creating Object..."
-	$(CC) $(CFLAGSDEBUG) $< -c -o $@
+	@echo -n "(CC) "
+	@echo $@
+	@$(CC) $(CFLAGSDEBUG) $< -c -o $@
 
 testgetinstructions: testgetinstructions.o get_instructions.o
 	$(CC) $(CFLAGSDEBUG)  $(TESTDIR)/$^ -o $(BINDIR)/$@
@@ -25,7 +26,7 @@ write_instructions: write_instructions.o get_instructions.o  utilities.o
 	$(RM) $^
 
 convert_instructions: convert_instruction.o  get_instructions.o utilities.o
-	@echo "Linking Objects..."
+	@echo -n "(LD) " $@
 	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
 	$(RM) $^
 function_tests: function_tests.o convert_instruction.o  get_instructions.o
@@ -33,13 +34,13 @@ function_tests: function_tests.o convert_instruction.o  get_instructions.o
 	$(RM) $(TESTDIR)/$^
 
 test_convert_instructions: test_convert_instructions.o convert_instruction.o  get_instructions.o
-	@echo "Linking Objects"
+	@echo -n "(LD)"
 	$(CC) $(CFLAGSDEBUG)  $(TESTDIR)/$^ -o $(BINDIR)/$@
 	$(RM) $(TESTDIR)/$^
 amd64_elf: main.o writer.o syntax_checker.o utilities.o sib.o modrm.o
-	@echo "Linking Objects"
-	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
-	$(RM) $^ 
+	@echo -n "(LD) " $@
+	@$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
+	@$(RM) $^ 
 
 preprocess: preprocess.o 
 	$(CC) $(CFLAGSDEBUG) $^ -o $(BINDIR)/$@
